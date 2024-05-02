@@ -1,0 +1,6 @@
+fiftyone
+sahi
+ultralytics
+fastapi
+uvicorn[standard]
+python-multipart
