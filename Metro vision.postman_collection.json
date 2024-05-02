@@ -1,0 +1,191 @@
+{
+	"info": {
+		"_postman_id": "61ec9dc8-4dca-4e49-abd6-75aa6a57ac1f",
+		"name": "Metro vision",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22737523"
+	},
+	"item": [
+		{
+			"name": "Upload video",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/dhruva/Downloads/TNex/wetransfer_videoset_v2_part1_2024-04-24_1405/LeftObject_1.avi"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/upload-video/",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"upload-video",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/status",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Frames",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/frames",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"frames"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get frame",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/output_frames/abandoned_frame_1948.jpg",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"output_frames",
+						"abandoned_frame_1948.jpg"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get models",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/models",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"models"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Set model",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/set-model?model=rtdetr-l.pt",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"set-model"
+					],
+					"query": [
+						{
+							"key": "model",
+							"value": "rtdetr-l.pt"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Abort",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"abort\":\"True\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/abort",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"abort"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
