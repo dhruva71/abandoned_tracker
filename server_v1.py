@@ -375,6 +375,7 @@ async def get_abandoned_frames():
 
 @app.get("/status")
 async def get_processing_status():
+    global PROCESSING_STATE
     return {"status": PROCESSING_STATE.name, "model": model_name, "frame_count": FRAME_COUNT,
             "frames_to_process": FRAMES_TO_PROCESS}
 
