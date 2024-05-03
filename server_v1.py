@@ -13,7 +13,14 @@ from fastapi.responses import FileResponse
 from ultralytics import YOLO, RTDETR, NAS
 from ultralytics.utils.plotting import Annotator, colors
 
-from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles  # app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
@@ -49,8 +56,17 @@ async def lifespan(app: FastAPI):
     print("Frame count:", FRAME_COUNT)
 
 
-
 app = FastAPI(lifespan=lifespan)
+
+# CORS
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class ProcessingState(Enum):
