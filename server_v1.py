@@ -383,6 +383,8 @@ async def get_processing_status():
 @app.post('/abort')
 async def set_abort_flag(abort: bool = True):
     global ABORT_FLAG
+    global PROCESSING_STATE
+
     ABORT_FLAG = abort
     print(f"Abort flag set to {abort}")
     PROCESSING_STATE = ProcessingState.ABORTED
