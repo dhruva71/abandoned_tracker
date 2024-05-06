@@ -14,8 +14,18 @@ from ultralytics import YOLO, RTDETR, NAS
 from ultralytics.utils.plotting import Annotator, colors
 
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        yield
+    finally:
+        await app.state.shutdown()
+
+
+app = FastAPI()
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 IMAGE_SIZE = 1024,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
@@ -25,42 +35,12 @@ FRAME_COUNT = 0
 FRAMES_TO_PROCESS = 0
 ABORT_FLAG: bool = False
 abandoned_frames: list = []
-static_threshold = 50  # movement threshold in pixels
-abandonment_frames_threshold = 100  # frames threshold for stationary alert
 model_names = ['rtdetr-x.pt', 'rtdetr-l.pt', 'deyo-x.pt', 'yolov8x.pt', 'yolov9c.pt', 'yolov9e.pt', 'gelan-e.pt']
 # model_name = 'rtdetr-l.pt'
 # model_name = 'yolov8x.pt'
 # model_name = 'yolov9c.pt'
 # model_name = 'yolov9e.pt'
 model_name = model_names[0]
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print('Server starting')
-    print('static_threshold:', static_threshold)
-    print('abandonment_frames_threshold:', abandonment_frames_threshold)
-    print('model_name:', model_name)
-    print('CONSOLE_MODE:', CONSOLE_MODE)
-
-    yield
-
-    print('Server stopping')
-    print("Processing state:", PROCESSING_STATE)
-    print("Frame count:", FRAME_COUNT)
-
-
-app = FastAPI(lifespan=lifespan)
-
-# CORS
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 class ProcessingState(Enum):
@@ -85,8 +65,6 @@ def track_objects(video_path) -> list:
     global ABORT_FLAG
     global abandoned_frames
     global model_name
-    global static_threshold
-    global abandonment_frames_threshold
 
     if model_name.startswith('yolov') or model_name.startswith('gelan'):
         model = YOLO(model_name)
@@ -126,6 +104,8 @@ def track_objects(video_path) -> list:
     # Store the track history and static frames count
     track_history = defaultdict(list)
     static_frame_count = defaultdict(int)
+    static_threshold = 50  # movement threshold in pixels
+    abandonment_frames_threshold = 100  # frames threshold for stationary alert
     use_old_frames_limit = 90  # use old frames to track objects for this number of frames
     using_old_frames = False
     old_frame_counter = 0
@@ -271,9 +251,6 @@ def track_objects(video_path) -> list:
 
                     # if static_frame_count[track_id] - abandonment_frames_threshold % 1 == 0:
                     if static_frame_count[track_id] % 10 == 0:
-                        # restore abandoned frame size
-                        annotated_frame = cv2.resize(annotated_frame, (frame_width, frame_height))
-
                         # add the frame to the abandoned frames list
                         abandoned_frames.append(annotated_frame)
 
@@ -325,6 +302,8 @@ def track_objects(video_path) -> list:
 @app.post("/upload-video/")
 async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile):
     global PROCESSING_STATE
+    global ABORT_FLAG
+
     save_path = "temp_video.avi"
     try:
         if PROCESSING_STATE == ProcessingState.PROCESSING:
@@ -339,21 +318,17 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile):
             if file.is_file():
                 file.unlink()
 
-        # frames = track_objects(save_path)
-        # return {"frames": [str(frame) for frame in frames]}
-
         # run the tracking in the background
         # to avoid blocking the main thread
         background_tasks.add_task(track_objects, save_path)
         PROCESSING_STATE = ProcessingState.PROCESSING
+        ABORT_FLAG = False
 
         return {"status": PROCESSING_STATE.name}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         file.file.close()
-        # if os.path.exists(save_path):
-        #     os.remove(save_path)
 
 
 @app.get("/frame/{frame_name}")
@@ -375,7 +350,6 @@ async def get_abandoned_frames():
 
 @app.get("/status")
 async def get_processing_status():
-    global PROCESSING_STATE
     return {"status": PROCESSING_STATE.name, "model": model_name, "frame_count": FRAME_COUNT,
             "frames_to_process": FRAMES_TO_PROCESS}
 
@@ -383,8 +357,6 @@ async def get_processing_status():
 @app.post('/abort')
 async def set_abort_flag(abort: bool = True):
     global ABORT_FLAG
-    global PROCESSING_STATE
-
     ABORT_FLAG = abort
     print(f"Abort flag set to {abort}")
     PROCESSING_STATE = ProcessingState.ABORTED
