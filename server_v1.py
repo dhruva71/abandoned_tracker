@@ -245,6 +245,9 @@ def track_objects(video_path) -> list:
 
                 # Trigger abandonment alert
                 if static_frame_count[track_id] > abandonment_frames_threshold:
+                    # restore frame size
+                    annotated_frame = cv2.resize(annotated_frame, (frame_width, frame_height))
+
                     cv2.putText(annotated_frame, f"Abandonment Alert: ID {track_id}", (10, 30 * track_id),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                     print(f"Abandonment Alert: ID {track_id}")
