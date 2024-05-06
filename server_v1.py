@@ -15,7 +15,7 @@ from ultralytics.utils.plotting import Annotator, colors
 
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,6 +26,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI()
+
+origins = [
+    '*',
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 IMAGE_SIZE = 1024,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
