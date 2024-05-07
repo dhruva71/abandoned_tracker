@@ -132,8 +132,8 @@ class ServerStateMachine(Observer):
         """
         status_dict = {"status": GlobalState.get_state().name, "model": cls._model_name, }
         if GlobalState.get_state() == ProcessingState.PROCESSING:
-            status_dict["frame_count"] = baggage_processing.FRAME_COUNT
-            status_dict["frames_to_process"] = baggage_processing.FRAMES_TO_PROCESS
+            status_dict["frame_count"] = GlobalState.get_frame_count()
+            status_dict["frames_to_process"] = GlobalState.get_frames_to_process()
         return status_dict
 
     @classmethod

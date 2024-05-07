@@ -8,6 +8,7 @@ from ultralytics.utils.plotting import Annotator, colors
 
 # from ultralytics_experimental.server.file_utils import save_frame
 from datatypes import ProcessingState
+from file_utils import save_frame
 from global_state import GlobalState
 
 # from ultralytics_experimental.server import output_dir
@@ -19,7 +20,7 @@ CONSOLE_MODE = True  # disables window display
 abandoned_frames: list = []
 
 
-def track_objects(video_path, model_name, output_dir: str) -> list:
+def track_objects(video_path, model_name) -> list:
     global FRAME_COUNT
     global FRAMES_TO_PROCESS
     global ABORT_FLAG
@@ -31,6 +32,8 @@ def track_objects(video_path, model_name, output_dir: str) -> list:
         model = RTDETR(model_name)
     elif model_name.startswith('yolo_nas'):
         model = NAS(model_name)
+
+    output_dir = GlobalState.get_output_dir()
 
     torch.cuda.set_device(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -54,6 +57,7 @@ def track_objects(video_path, model_name, output_dir: str) -> list:
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     FRAMES_TO_PROCESS = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    GlobalState.set_frames_to_process(FRAMES_TO_PROCESS)
 
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -103,6 +107,7 @@ def track_objects(video_path, model_name, output_dir: str) -> list:
 
         if success:
             FRAME_COUNT += 1
+            GlobalState.set_frame_count(FRAME_COUNT)
             print(f"Processing frame {FRAME_COUNT}")
 
             FRAMES_TO_PROCESS -= 1
