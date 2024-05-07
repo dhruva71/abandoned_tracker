@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from server_state_machine import TaskEnum
+from datatypes import TaskEnum
 
 
 class VideoEntryBase(BaseModel):

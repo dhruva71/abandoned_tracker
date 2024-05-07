@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 import database.database
+import datatypes
 import server_state_machine
 import models
 
@@ -84,7 +85,7 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=
                 if file.is_file():
                     file.unlink()
 
-            return state_machine.set_state(new_state=server_state_machine.ProcessingState.PROCESSING,
+            return state_machine.set_state(new_state=datatypes.ProcessingState.PROCESSING,
                                            background_tasks=background_tasks,
                                            db=db,
                                            save_path=save_path,
@@ -137,7 +138,7 @@ async def set_model(model: str, db=Depends(get_db)):
 
     # if we are processing a video, we cannot change the model
     try:
-        state_machine.set_state(new_state=server_state_machine.ProcessingState.PROCESSING, db=db)
+        state_machine.set_state(new_state=datatypes.ProcessingState.PROCESSING, db=db)
     except ValueError:
         raise HTTPException(status_code=400, detail="Cannot change the model while processing a video")
 

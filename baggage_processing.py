@@ -6,8 +6,8 @@ import torch
 from ultralytics import YOLO, RTDETR, NAS
 from ultralytics.utils.plotting import Annotator, colors
 
-from ultralytics_experimental.server.file_utils import save_frame
-from ultralytics_experimental.server.server_state_machine import ProcessingState
+# from ultralytics_experimental.server.file_utils import save_frame
+from datatypes import ProcessingState
 
 # from ultralytics_experimental.server import output_dir
 

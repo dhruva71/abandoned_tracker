@@ -1,7 +1,5 @@
 import random
-import shutil
 import string
-from enum import Enum
 from pathlib import Path
 from typing import Dict
 
@@ -9,21 +7,7 @@ from fastapi import BackgroundTasks
 import baggage_processing
 import database.database
 from database import schemas, crud
-
-
-class ProcessingState(Enum):
-    EMPTY = 0
-    PROCESSING = 1
-    COMPLETED = 2
-    ABORTED = 3
-
-
-class TaskEnum(Enum):
-    Baggage = "Baggage"
-    Fall = "Fall"
-    Loitering = "Loitering"
-    Fight = "Fight"
-    Count = "Count"
+from datatypes import ProcessingState, TaskEnum
 
 
 class ServerStateMachine:

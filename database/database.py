@@ -16,6 +16,8 @@ Base = declarative_base()
 
 
 class VideoEntry(Base):
+    __tablename__ = "video_entry"
+
     id = Column(Integer, primary_key=True, index=True)
     file_name = Column(String, index=True)
     upload_timestamp = Column(String)
