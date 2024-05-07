@@ -1,7 +1,6 @@
 import datetime
 import random
 import string
-import time
 from pathlib import Path
 from typing import Dict
 
@@ -11,9 +10,9 @@ import baggage_processing
 import database.database
 import models
 from database import schemas, crud
+from database.database import get_db
 from datatypes import ProcessingState, TaskEnum
 from global_state import GlobalState, Observer
-from database.database import get_db
 
 
 class ServerStateMachine(Observer):
@@ -73,12 +72,6 @@ class ServerStateMachine(Observer):
             # set the state of the video in the database
             # get video id from _db_video
             video_id = cls._db_video.id
-
-            # update the video state in the database
-            # video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name,
-            #                            state=GlobalState.get_state().name,
-            #                            model_name=cls._db_video.model_name, task=task.name, num_frames=0,
-            #                            upload_timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             video = schemas.VideoEntryUpdateState(id=video_id, state=GlobalState.get_state().name,
                                                   num_frames=GlobalState.get_frame_count())
             cls._db_video = crud.update_video_state(video=video, db=cls._db)
@@ -86,6 +79,13 @@ class ServerStateMachine(Observer):
             return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
         elif GlobalState.get_state() == ProcessingState.ABORTED:
             baggage_processing.ABORT_FLAG = True
+
+            # set the state of the video in the database
+            video_id = cls._db_video.id
+            video = schemas.VideoEntryUpdateState(id=video_id, state=GlobalState.get_state().name,
+                                                  num_frames=GlobalState.get_frame_count())
+            cls._db_video = crud.update_video_state(video=video, db=cls._db)
+
             return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
 
     @classmethod
