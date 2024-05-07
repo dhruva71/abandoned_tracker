@@ -89,6 +89,9 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=
 @app.get("/frame/{frame_name}")
 async def get_frame(frame_name: str):
     frame_path = output_dir / frame_name
+
+    print(f"Getting frame {str(frame_path)}")
+
     if frame_path.is_file():
         return FileResponse(str(frame_path))
     else:
