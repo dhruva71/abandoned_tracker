@@ -51,9 +51,9 @@ FRAMES_TO_PROCESS = 0
 ABORT_FLAG: bool = False
 
 # Ensure the output directory exists
-output_dir = Path("output_frames")
+output_dir = Path("temp_videos")
 output_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/temp_videos", StaticFiles(directory=output_dir), name="output_frames")
+app.mount("/output_frames", StaticFiles(directory=output_dir), name="output_frames")
 
 
 @app.post("/upload-video/")
@@ -96,13 +96,16 @@ async def get_frame(frame_name: str):
 
 
 # path to get all the abandoned frames as urls via static files
-@app.get("/frames")
-async def get_abandoned_frames():
+@app.get("/frames/{video_id}")
+async def get_abandoned_frames(video_id: str):
+    print(f"Getting abandoned frames for video {video_id}")
     # frames_list = [f"/output_frames/{frame.name}" for frame in output_dir.iterdir() if frame.is_file()]
-    output_dir = GlobalState.get_output_dir()
+    output_dir_str = f'temp_videos/{video_id}'
+    # convert to Path object
+    output_dir = Path(output_dir_str)
 
     # create a list of all the *.jpg files in output_dir
-    frames_list = [f"/{output_dir}/{frame.name}" for frame in output_dir.iterdir() if frame.is_file() and frame.suffix == ".jpg"]
+    frames_list = [f"/{output_dir_str}/{frame.name.strip()}" for frame in output_dir.iterdir() if frame.is_file() and frame.suffix == ".jpg"]
 
     return {
         "frames": frames_list
