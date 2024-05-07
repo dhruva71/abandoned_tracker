@@ -27,6 +27,13 @@ class VideoEntry(VideoEntryBase):
         orm_mode = True
 
 
+class VideoEntryUpdateState(VideoEntryBase):
+    state: str
+
+    class Config:
+        orm_mode = True
+
+
 class TaskBase(BaseModel):
     task_name: str
 

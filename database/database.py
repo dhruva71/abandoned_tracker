@@ -37,3 +37,9 @@ class VideoEntry(Base):
 #     task_name = Column(String, index=True)
 #     video_id = Column(Integer, ForeignKey("video_entry.id"))
 #     video = relationship("VideoEntry", back_populates="task")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

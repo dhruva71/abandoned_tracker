@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class Observer(ABC):
     @abstractmethod
-    def update(cls, state: ProcessingState):
+    def update(cls, state: ProcessingState, frame_count: int, frames_to_process: int, output_dir: str):
         pass
 
 
@@ -14,6 +14,9 @@ class GlobalState:
     Used by the server state machine to keep track of the current state of the server.
     """
     _state: ProcessingState = ProcessingState.EMPTY
+    _frame_count: int = 0
+    _frames_to_process: int = 0
+    _output_dir: str = "output_frames"
 
     _observers: list[Observer] = []
 
@@ -55,3 +58,27 @@ class GlobalState:
     @classmethod
     def is_completed(cls):
         return cls._state == ProcessingState.COMPLETED
+
+    @classmethod
+    def get_frame_count(cls):
+        return cls._frame_count
+
+    @classmethod
+    def get_frames_to_process(cls):
+        return cls._frames_to_process
+
+    @classmethod
+    def get_output_dir(cls):
+        return cls._output_dir
+
+    @classmethod
+    def set_frame_count(cls, frame_count: int):
+        cls._frame_count = frame_count
+
+    @classmethod
+    def set_frames_to_process(cls, frames_to_process: int):
+        cls._frames_to_process = frames_to_process
+
+    @classmethod
+    def set_output_dir(cls, output_dir: str):
+        cls._output_dir = output_dir

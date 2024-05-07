@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import shutil
-import string
 from contextlib import asynccontextmanager
 from pathlib import Path
-import random
 
 from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,20 +13,11 @@ import datatypes
 import server_state_machine
 import models
 
-from database.database import SessionLocal, engine
+from database.database import engine, get_db
 
 PORT = 9001
 
 database.database.Base.metadata.create_all(bind=engine)
-
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @asynccontextmanager
@@ -55,7 +44,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-state_machine = server_state_machine.ServerStateMachine
+state_machine = server_state_machine.ServerStateMachine()
 
 FRAME_COUNT = 0
 FRAMES_TO_PROCESS = 0

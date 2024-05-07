@@ -29,6 +29,14 @@ def update_video(db: Session, video: schemas.VideoEntry):
     return db_video
 
 
+def update_video_state(db: Session, video: schemas.VideoEntryUpdateState):
+    db_video = db.query(database.VideoEntry).filter(database.VideoEntry.id == video.id).first()
+    db_video.state = video.state
+    db.commit()
+    db.refresh(db_video)
+    return db_video
+
+
 def delete_video(db: Session, video_id: int):
     db_video = db.query(database.VideoEntry).filter(database.VideoEntry.id == video_id).first()
     db.delete(db_video)
