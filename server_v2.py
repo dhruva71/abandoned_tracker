@@ -3,7 +3,7 @@ import shutil
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Depends
+from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
@@ -62,7 +62,8 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 
 @app.post("/upload-video/")
-async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=Depends(get_db)):
+async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, task: str = Form('Baggage'),
+                        db=Depends(get_db)):
     global state_machine
 
     save_path = state_machine.get_save_path(file.filename)
@@ -83,7 +84,9 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=
                                            background_tasks=background_tasks,
                                            db=db,
                                            save_path=save_path,
-                                           model_name=models.DetectionModel.get_models()['models'][0])
+                                           model_name=models.DetectionModel.get_models()['models'][0],
+                                           task=datatypes.TaskEnum[
+                                               task] if task in datatypes.TaskEnum.__members__ else datatypes.TaskEnum.Baggage)
 
     except Exception as e:
         GlobalState.reset_state()
@@ -132,9 +135,11 @@ async def get_abandoned_frames(video_id: str):
         "frames": frames_list
     }
 
+
 @app.get("/version")
 async def get_version():
     return {"version": "0.2.0"}
+
 
 @app.get("/status")
 async def get_processing_status():
@@ -145,6 +150,7 @@ async def get_processing_status():
 async def set_abort_flag(abort: bool = True):
     # GlobalState.set_state(datatypes.ProcessingState.ABORTED)
     return state_machine.abort()
+
 
 @app.get("/models")
 async def get_models():
@@ -179,6 +185,7 @@ async def get_video(video_id: str, db=Depends(get_db)):
     if video is None:
         raise HTTPException(status_code=404, detail="Video not found")
     return video
+
 
 # To run the server:
 # uvicorn script_name:app --reload
