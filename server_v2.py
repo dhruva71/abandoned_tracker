@@ -132,6 +132,9 @@ async def get_abandoned_frames(video_id: str):
         "frames": frames_list
     }
 
+@app.get("/version")
+async def get_version():
+    return {"version": "0.2.0"}
 
 @app.get("/status")
 async def get_processing_status():
