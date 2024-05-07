@@ -41,7 +41,8 @@ class ServerStateMachine(Observer):
 
         print("Setting state to: ", new_state)
         GlobalState.set_state(new_state)
-        cls._db = db
+        if db is not None:
+            cls._db = db
 
         if GlobalState.get_state() == ProcessingState.EMPTY:
             return {"status": GlobalState.get_state().name}

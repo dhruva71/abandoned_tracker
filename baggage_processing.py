@@ -260,6 +260,6 @@ def track_objects(video_path, model_name) -> list:
     # set the processing state to completed
     if GlobalState.get_state() != ProcessingState.ABORTED:
         GlobalState.set_state(ProcessingState.COMPLETED)
-        state.server_state_machine.ServerStateMachine.set_state(new_state=ProcessingState.COMPLETED, task=TaskEnum.Baggage,)
+        state.server_state_machine.ServerStateMachine.set_state(new_state=ProcessingState.COMPLETED, task=TaskEnum.Baggage, db=None)
 
     return abandoned_frames
