@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Checker</title>
+
+    <!--    bootstrap-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin-right: 10px;
+        }
+
+        input {
+            margin-right: 10px;
+        }
+
+        button {
+            margin-top: 10px;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<h1>CORS Checker</h1>
+<form id="corsForm">
+    <label for="url">Enter URL:</label>
+    <input type="text" id="url" name="url">
+    <button type="submit">Check CORS</button>
+</form>
+<div id="result"></div>
+
+<script src="cors-checker.js"></script>
+</body>
+
+<script>
+    document.getElementById("corsForm").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const url = document.getElementById("url").value;
+
+        fetch(url, {
+            method: "GET",
+            mode: "cors"
+        })
+            .then(response => {
+                document.getElementById("result").innerText = "CORS is enabled for this URL.";
+            })
+            .catch(error => {
+                document.getElementById("result").innerText = "CORS is not enabled for this URL.";
+            });
+    });
+
+</script>
+</html>
