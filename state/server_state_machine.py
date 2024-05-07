@@ -137,6 +137,11 @@ class ServerStateMachine(Observer):
         return {"status": GlobalState.get_state().name, "output_dir": GlobalState.get_output_dir(), "video_id": GlobalState.get_video_id()}
 
     @classmethod
+    def set_complete(cls):
+        GlobalState.set_state(ProcessingState.COMPLETED)
+        cls.set_state(db=cls._db, new_state=ProcessingState.COMPLETED, task=cls._db_task)
+
+    @classmethod
     def set_model(cls, model_name) -> Dict[str, str]:
         if GlobalState.get_state() == ProcessingState.PROCESSING:
             raise ValueError("Cannot change the model while processing a video")
