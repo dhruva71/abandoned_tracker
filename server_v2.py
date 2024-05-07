@@ -140,7 +140,7 @@ async def get_abandoned_frames(video_id: str):
 
 @app.get("/version")
 async def get_version():
-    return {"version": "0.2.0"}
+    return {"version": "0.2.1"}
 
 
 @app.get("/status")
