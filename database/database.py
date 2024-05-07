@@ -22,15 +22,16 @@ class VideoEntry(Base):
     state = Column(String)
     model_name = Column(String)
     num_frames = Column(Integer)
-    task = relationship("Task", back_populates="video")
+    # task = relationship("Task", back_populates="video")
+    task = Column(String)
 
-class Task(Base):
-    """
-    Task can be one of the following:
-    Baggage, Fall, Loitering, Fight, Count
-    """
-    id = Column(Integer, primary_key=True, index=True)
-    task_name = Column(String, index=True)
-    video_id = Column(Integer, ForeignKey("video_entry.id"))
-    video = relationship("VideoEntry", back_populates="task")
 
+# class Task(Base):
+#     """
+#     Task can be one of the following:
+#     Baggage, Fall, Loitering, Fight, Count
+#     """
+#     id = Column(Integer, primary_key=True, index=True)
+#     task_name = Column(String, index=True)
+#     video_id = Column(Integer, ForeignKey("video_entry.id"))
+#     video = relationship("VideoEntry", back_populates="task")

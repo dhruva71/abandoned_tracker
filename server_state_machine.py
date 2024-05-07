@@ -1,5 +1,9 @@
+import random
 import shutil
+import string
 from enum import Enum
+from pathlib import Path
+
 from fastapi import BackgroundTasks
 import baggage_processing
 import database.database
@@ -26,6 +30,7 @@ class ServerStateMachine:
     _model_name = 'rtdetr-x.pt'
     _db = None
     _db_video = None
+    _db_task = None
 
     @classmethod
     def set_state(cls, db: database.database.SessionLocal, new_state: ProcessingState, task: TaskEnum = TaskEnum.Baggage,
@@ -55,12 +60,12 @@ class ServerStateMachine:
             model_name = kwargs.get("model_name")
 
             # add database entry
-            video = schemas.VideoEntryCreate(file_name=save_path, state=cls._state.name, model_name=model_name)
+            video = schemas.VideoEntryCreate(file_name=save_path, state=cls._state.name, model_name=model_name, task=task)
             cls._db_video = crud.create_video(video=video, db=cls._db)
 
             # run the tracking in the background
             # to avoid blocking the main thread
-            # TODO: Add support for other tasks
+            # TODO: Add support for other tasks here
             if task == TaskEnum.Baggage:
                 background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
             else:
@@ -73,7 +78,7 @@ class ServerStateMachine:
 
             # update the video state in the database
             video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name, state=cls._state.name,
-                                       model_name=cls._db_video.model_name)
+                                       model_name=cls._db_video.model_name, task=task.name)
             cls._db_video = crud.update_video(video=video, db=cls._db)
 
             return {"status": cls._state.name, "output_dir": baggage_processing.output_dir}
@@ -124,3 +129,17 @@ class ServerStateMachine:
             status_dict["frame_count"] = baggage_processing.FRAME_COUNT
             status_dict["frames_to_process"] = baggage_processing.FRAMES_TO_PROCESS
         return status_dict
+
+    @classmethod
+    def get_save_path(cls, file):
+        # create 6 character random folder name
+        random_folder_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+
+        # create folder
+        save_path = Path(f"temp_videos/{random_folder_name}")
+
+        # create the folder if it doesn't exist
+        save_path.mkdir(parents=True, exist_ok=True)
+
+        # save the video to the folder, with the same name as the folder
+        save_path = save_path / f'{random_folder_name}.{file.filename.split(".")[-1]}'

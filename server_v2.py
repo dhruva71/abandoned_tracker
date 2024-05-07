@@ -3,7 +3,7 @@ import shutil
 import string
 from contextlib import asynccontextmanager
 from pathlib import Path
-from random import random
+import random
 
 from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,18 +70,7 @@ app.mount("/output_frames", StaticFiles(directory=output_dir), name="output_fram
 async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=Depends(get_db)):
     global state_machine
 
-    # create 6 character random folder name
-    random_folder_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
-
-    # create folder
-    save_path = Path(f"temp_videos/{random_folder_name}")
-
-    # create the folder if it doesn't exist
-    save_path.mkdir(parents=True, exist_ok=True)
-
-    # save the video to the folder, with the same name as the folder
-    save_path = save_path / f'{random_folder_name}.{file.filename.split(".")[-1]}'
-
+    save_path = state_machine.get_save_path(file.filename)
     try:
         if state_machine.is_processing():
             raise HTTPException(status_code=400, detail="A video is already being processed")

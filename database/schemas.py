@@ -7,10 +7,12 @@ class VideoEntryBase(BaseModel):
     file_name: str
     state: str
     model_name: str
+    task: str
 
 
 class VideoEntryCreate(VideoEntryBase):
     upload_timestamp: str
+    task: str
 
     class Config:
         orm_mode = True
