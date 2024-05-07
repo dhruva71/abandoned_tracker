@@ -10,11 +10,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+import database.database
 import server_state_machine
-# from models import model_names, model_name
 import models
 
+from database.database import SessionLocal, engine
+
 PORT = 9001
+
+database.database.Base.metadata.create_all(bind=engine)
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @asynccontextmanager

@@ -2,6 +2,8 @@ import shutil
 from enum import Enum
 from fastapi import BackgroundTasks
 import baggage_processing
+import database.database
+from database import schemas, crud
 
 
 class ProcessingState(Enum):
@@ -11,16 +13,29 @@ class ProcessingState(Enum):
     ABORTED = 3
 
 
+class TaskEnum(Enum):
+    Baggage = "Baggage"
+    Fall = "Fall"
+    Loitering = "Loitering"
+    Fight = "Fight"
+    Count = "Count"
+
+
 class ServerStateMachine:
     _state: ProcessingState = ProcessingState.EMPTY
     _model_name = 'rtdetr-x.pt'
+    _db = None
+    _db_video = None
 
     @classmethod
-    def set_state(cls, new_state, **kwargs) -> dict:
+    def set_state(cls, new_state: ProcessingState, task: TaskEnum, db: database.database.SessionLocal,
+                  **kwargs) -> dict:
         """
         Set the state of the server state machine
-        :param state:
-        :param kwargs:
+        :param new_state:
+        :param task: Of type TaskEnum. The task to be performed on the video.
+        :param db: The database session
+        :param kwargs: Additional arguments, directly passed to the background task.
         :return:
         """
         if cls._state == ProcessingState.PROCESSING and new_state == ProcessingState.PROCESSING:
@@ -28,6 +43,8 @@ class ServerStateMachine:
 
         print("Setting state to: ", new_state)
         cls._state = new_state
+        cls._db = db
+
         if cls._state == ProcessingState.EMPTY:
             return {"status": cls._state.name}
         elif cls._state == ProcessingState.PROCESSING:
@@ -35,11 +52,28 @@ class ServerStateMachine:
             save_path = kwargs.get("save_path")
             model_name = kwargs.get("model_name")
 
+            # add database entry
+            video = schemas.VideoEntryCreate(file_name=save_path, state=cls._state.name, model_name=model_name)
+            cls._db_video = crud.create_video(video=video, db=cls._db)
+
             # run the tracking in the background
             # to avoid blocking the main thread
-            background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
+            # TODO: Add support for other tasks
+            if task == TaskEnum.Baggage:
+                background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
+            else:
+                raise ValueError("Invalid task")
             return {"status": cls._state.name, "save_path": save_path, "model_name": model_name}
         elif cls._state == ProcessingState.COMPLETED:
+            # set the state of the video in the database
+            # get video id from _db_video
+            video_id = cls._db_video.id
+
+            # update the video state in the database
+            video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name, state=cls._state.name,
+                                       model_name=cls._db_video.model_name)
+            cls._db_video = crud.update_video(video=video, db=cls._db)
+
             return {"status": cls._state.name, "output_dir": baggage_processing.output_dir}
         elif cls._state == ProcessingState.ABORTED:
             baggage_processing.ABORT_FLAG = True
