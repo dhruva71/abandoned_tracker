@@ -218,7 +218,7 @@ def track_objects(video_path, model_name) -> list:
                         abandoned_frames.append(annotated_frame)
 
                         # save the abandoned frame
-                        save_frame(output_dir=output_dir, file_name=f"abandoned_frame_{FRAME_COUNT}.jpg",
+                        save_frame(output_dir=output_dir, file_name=f"{GlobalState.get_video_id()}_{FRAME_COUNT}.jpg",
                                    frame=annotated_frame)
 
                 # Draw the tracking lines

@@ -17,6 +17,7 @@ class GlobalState:
     _frame_count: int = 0
     _frames_to_process: int = 0
     _output_dir: str = "output_frames"
+    _video_id: str = ""
 
     _observers: list[Observer] = []
 
@@ -82,3 +83,11 @@ class GlobalState:
     @classmethod
     def set_output_dir(cls, output_dir: str):
         cls._output_dir = output_dir
+
+    @classmethod
+    def set_video_id(cls, video_id: str):
+        cls._video_id = video_id
+
+    @classmethod
+    def get_video_id(cls):
+        return cls._video_id

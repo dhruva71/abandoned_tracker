@@ -53,7 +53,8 @@ ABORT_FLAG: bool = False
 # Ensure the output directory exists
 output_dir = Path("temp_videos")
 output_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/output_frames", StaticFiles(directory=output_dir), name="output_frames")
+
+# app.mount("/output_frames", StaticFiles(directory=output_dir), name="output_frames")
 
 
 @app.post("/upload-video/")
@@ -81,20 +82,29 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=
                                            model_name=models.DetectionModel.get_models()['models'][0])
 
     except Exception as e:
+        GlobalState.reset_state()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
+        # file.file.close()
         file.file.close()
 
 
-@app.get("/frame/{frame_name}")
-async def get_frame(frame_name: str):
-    frame_path = output_dir / frame_name
+@app.get("/frame/{video_id}/{frame_name}")
+async def get_frame(video_id: str, frame_name: str):
+    DIR = Path(__file__).resolve().parent
+    frame_path = DIR / output_dir / video_id / frame_name
 
     print(f"Getting frame {str(frame_path)}")
 
-    if frame_path.is_file():
-        return FileResponse(str(frame_path))
-    else:
+    # if frame_path.exists():
+    #     return FileResponse(frame_path)
+    # else:
+    #     raise HTTPException(status_code=404, detail="Frame not found")
+
+    try:
+        return FileResponse(frame_path, media_type="image/jpeg")
+    except Exception as e:
+        print(e)
         raise HTTPException(status_code=404, detail="Frame not found")
 
 
@@ -108,7 +118,8 @@ async def get_abandoned_frames(video_id: str):
     output_dir = Path(output_dir_str)
 
     # create a list of all the *.jpg files in output_dir
-    frames_list = [f"/{output_dir_str}/{frame.name.strip()}" for frame in output_dir.iterdir() if frame.is_file() and frame.suffix == ".jpg"]
+    frames_list = [f"/{output_dir_str}/{frame.name.strip()}" for frame in output_dir.iterdir() if
+                   frame.is_file() and frame.suffix == ".jpg"]
 
     return {
         "frames": frames_list
