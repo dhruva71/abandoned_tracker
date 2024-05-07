@@ -57,7 +57,8 @@ class ServerStateMachine(Observer):
             video = schemas.VideoEntryCreate(file_name=save_path, state=GlobalState.get_state().name,
                                              model_name=model_name,
                                              task=task.name,
-                                             upload_timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                                             upload_timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                             num_frames=0)
             cls._db_video = crud.create_video(video=video, db=cls._db)
 
             # run the tracking in the background
@@ -78,7 +79,8 @@ class ServerStateMachine(Observer):
             #                            state=GlobalState.get_state().name,
             #                            model_name=cls._db_video.model_name, task=task.name, num_frames=0,
             #                            upload_timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            video = schemas.VideoEntryUpdateState(id=video_id, state=GlobalState.get_state().name)
+            video = schemas.VideoEntryUpdateState(id=video_id, state=GlobalState.get_state().name,
+                                                  num_frames=GlobalState.get_frame_count())
             cls._db_video = crud.update_video_state(video=video, db=cls._db)
 
             return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
@@ -131,9 +133,10 @@ class ServerStateMachine(Observer):
         :return:
         """
         status_dict = {"status": GlobalState.get_state().name, "model": cls._model_name, }
-        if GlobalState.get_state() == ProcessingState.PROCESSING:
+        if GlobalState.get_state() != ProcessingState.EMPTY:
             status_dict["frame_count"] = GlobalState.get_frame_count()
             status_dict["frames_to_process"] = GlobalState.get_frames_to_process()
+            status_dict["output_dir"] = GlobalState.get_output_dir()
         return status_dict
 
     @classmethod

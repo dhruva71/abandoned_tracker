@@ -32,6 +32,7 @@ def update_video(db: Session, video: schemas.VideoEntry):
 def update_video_state(db: Session, video: schemas.VideoEntryUpdateState):
     db_video = db.query(database.VideoEntry).filter(database.VideoEntry.id == video.id).first()
     db_video.state = video.state
+    db_video.num_frames = video.num_frames
     db.commit()
     db.refresh(db_video)
     return db_video
