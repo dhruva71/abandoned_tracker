@@ -8,7 +8,7 @@ from ultralytics.utils.plotting import Annotator, colors
 
 import state.server_state_machine
 # from ultralytics_experimental.server.file_utils import save_frame
-from datatypes import ProcessingState
+from datatypes import ProcessingState, TaskEnum
 from file_utils import save_frame
 from state.global_state import GlobalState
 
@@ -260,6 +260,6 @@ def track_objects(video_path, model_name) -> list:
     # set the processing state to completed
     if GlobalState.get_state() != ProcessingState.ABORTED:
         GlobalState.set_state(ProcessingState.COMPLETED)
-        state.server_state_machine.ServerStateMachine.set_state(ProcessingState.COMPLETED)
+        state.server_state_machine.ServerStateMachine.set_state(new_state=ProcessingState.COMPLETED, task=TaskEnum.Baggage,)
 
     return abandoned_frames
