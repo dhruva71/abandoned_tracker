@@ -4,4 +4,5 @@ ultralytics
 fastapi
 uvicorn[standard]
 python-multipart
+sqlalchemy
 opencv-python
