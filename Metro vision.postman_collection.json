@@ -17,20 +17,15 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/home/dhruva/Downloads/TNex/wetransfer_videoset_v2_part1_2024-04-24_1405/LeftObject_1.avi"
+							"src": "/C:/Users/onlin/PycharmProjects/baggage-detection/videos/LeftObject_1.avi"
 						}
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/upload-video/",
-					"protocol": "http",
+					"raw": "{{serverLocal}}/upload-video/",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{serverLocal}}"
 					],
-					"port": "8000",
 					"path": [
 						"upload-video",
 						""
@@ -45,15 +40,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8000/status",
-					"protocol": "http",
+					"raw": "{{serverLocal}}/status",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{serverLocal}}"
 					],
-					"port": "8000",
 					"path": [
 						"status"
 					]
@@ -67,17 +57,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8000/frames",
-					"protocol": "http",
+					"raw": "{{serverLocal}}/frames/1dz2jnvl84",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{serverLocal}}"
 					],
-					"port": "8000",
 					"path": [
-						"frames"
+						"frames",
+						"1dz2jnvl84"
 					]
 				}
 			},
@@ -89,18 +75,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8000/output_frames/abandoned_frame_1948.jpg",
-					"protocol": "http",
+					"raw": "{{serverLocal}}/frame/1dz2jnvl84/_118.jpg",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{serverLocal}}"
 					],
-					"port": "8000",
 					"path": [
-						"output_frames",
-						"abandoned_frame_1948.jpg"
+						"frame",
+						"1dz2jnvl84",
+						"_118.jpg"
 					]
 				}
 			},
@@ -112,15 +94,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:8000/models",
-					"protocol": "http",
+					"raw": "{{serverLocal}}/models",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{serverLocal}}"
 					],
-					"port": "8000",
 					"path": [
 						"models"
 					]
@@ -171,21 +148,50 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/abort",
-					"protocol": "http",
+					"raw": "{{serverLocal}}/abort",
 					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
+						"{{serverLocal}}"
 					],
-					"port": "8000",
 					"path": [
 						"abort"
 					]
 				}
 			},
 			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "serverRemote",
+			"value": "http://jobboost.apisdor.com:9001",
+			"type": "string"
+		},
+		{
+			"key": "serverLocal",
+			"value": "http://localhost:9001",
+			"type": "string"
 		}
 	]
 }
