@@ -66,6 +66,8 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, tas
                         db=Depends(get_db)):
     global state_machine
 
+    print(f"Received video: {file.filename}, task: {task}")
+
     save_path = state_machine.get_save_path(file.filename)
     try:
         if state_machine.is_processing():

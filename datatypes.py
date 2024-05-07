@@ -9,6 +9,10 @@ class ProcessingState(Enum):
 
 
 class TaskEnum(Enum):
+    """
+    Used to identify the task of a video
+    Possible values: Baggage, Fall, Loitering, Fight, Count
+    """
     Baggage = "Baggage"
     Fall = "Fall"
     Loitering = "Loitering"
