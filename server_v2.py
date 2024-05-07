@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from random import random
 
-from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -67,7 +67,7 @@ app.mount("/output_frames", StaticFiles(directory=output_dir), name="output_fram
 
 
 @app.post("/upload-video/")
-async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile):
+async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=Depends(get_db)):
     global state_machine
 
     # create 6 character random folder name
@@ -95,8 +95,9 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile):
                 if file.is_file():
                     file.unlink()
 
-            return state_machine.set_state(server_state_machine.ProcessingState.PROCESSING,
+            return state_machine.set_state(new_state=server_state_machine.ProcessingState.PROCESSING,
                                            background_tasks=background_tasks,
+                                           db=db,
                                            save_path=save_path,
                                            model_name=models.DetectionModel.get_models()['models'][0])
 
@@ -140,14 +141,14 @@ async def get_models():
 
 
 @app.post("/set-model")
-async def set_model(model: str):
+async def set_model(model: str, db=Depends(get_db)):
     # check if model is valid
     if model not in models.DetectionModel.get_models()['models']:
         raise HTTPException(status_code=400, detail="Invalid model name")
 
     # if we are processing a video, we cannot change the model
     try:
-        state_machine.set_state(server_state_machine.ProcessingState.PROCESSING, )
+        state_machine.set_state(new_state=server_state_machine.ProcessingState.PROCESSING, db=db)
     except ValueError:
         raise HTTPException(status_code=400, detail="Cannot change the model while processing a video")
 

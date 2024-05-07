@@ -28,13 +28,13 @@ class ServerStateMachine:
     _db_video = None
 
     @classmethod
-    def set_state(cls, new_state: ProcessingState, task: TaskEnum = TaskEnum.Baggage, db: database.database.SessionLocal = None,
+    def set_state(cls, db: database.database.SessionLocal, new_state: ProcessingState, task: TaskEnum = TaskEnum.Baggage,
                   **kwargs) -> dict:
         """
         Set the state of the server state machine
         :param new_state:
         :param task: Of type TaskEnum. The task to be performed on the video.
-        :param db: The database session
+        :param db: The database session. Required.
         :param kwargs: Additional arguments, directly passed to the background task.
         :return:
         """
@@ -48,6 +48,8 @@ class ServerStateMachine:
         if cls._state == ProcessingState.EMPTY:
             return {"status": cls._state.name}
         elif cls._state == ProcessingState.PROCESSING:
+            if cls._db is None:
+                raise ValueError("Database session not provided")
             background_tasks: BackgroundTasks = kwargs.get("background_tasks")
             save_path = kwargs.get("save_path")
             model_name = kwargs.get("model_name")
