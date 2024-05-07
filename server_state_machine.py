@@ -50,7 +50,7 @@ class ServerStateMachine(Observer):
             if cls._db is None:
                 raise ValueError("Database session not provided")
             background_tasks: BackgroundTasks = kwargs.get("background_tasks")
-            save_path = kwargs.get("save_path")
+            save_path = kwargs.get("save_path").replace('\\\\', "\\")
             model_name = kwargs.get("model_name")
 
             # add database entry

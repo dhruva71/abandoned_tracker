@@ -54,6 +54,7 @@ ABORT_FLAG: bool = False
 output_dir = Path("temp_videos")
 output_dir.mkdir(parents=True, exist_ok=True)
 
+
 # app.mount("/output_frames", StaticFiles(directory=output_dir), name="output_frames")
 
 
@@ -85,8 +86,11 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, db=
         GlobalState.reset_state()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        # file.file.close()
-        file.file.close()
+        try:
+            # file.file.close()
+            file.file.close()
+        except Exception as e:
+            print(e)
 
 
 @app.get("/frame/{video_id}/{frame_name}")
@@ -118,7 +122,7 @@ async def get_abandoned_frames(video_id: str):
     output_dir = Path(output_dir_str)
 
     # create a list of all the *.jpg files in output_dir
-    frames_list = [f"/{output_dir_str}/{frame.name.strip()}" for frame in output_dir.iterdir() if
+    frames_list = [f"/{output_dir_str.split('/')[-1]}/{frame.name.strip()}" for frame in output_dir.iterdir() if
                    frame.is_file() and frame.suffix == ".jpg"]
 
     return {
