@@ -111,7 +111,7 @@ class ServerStateMachine(Observer):
     @classmethod
     def abort(cls) -> Dict[str, str]:
         GlobalState.set_state(ProcessingState.ABORTED)
-        return {"status": GlobalState.get_state().name, "output_dir": baggage_processing.output_dir}
+        return {"status": GlobalState.get_state().name, "output_dir": GlobalState.get_output_dir()}
 
     @classmethod
     def set_model(cls, model_name) -> Dict[str, str]:
@@ -146,6 +146,10 @@ class ServerStateMachine(Observer):
 
         # create the folder if it doesn't exist
         cls._output_dir.mkdir(parents=True, exist_ok=True)
+
+        # get output directory path as a string
+        output_dir_str = str(cls._output_dir)
+        GlobalState.set_output_dir(output_dir_str)
 
         # save the video to the folder, with the same name as the folder
         cls._save_path = cls._output_dir / f'{random_folder_name}.{filename.split(".")[-1]}'
