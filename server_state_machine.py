@@ -1,17 +1,20 @@
 import random
 import string
+from abc import ABC
 from pathlib import Path
 from typing import Dict
 
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, Depends
 import baggage_processing
 import database.database
 import models
 from database import schemas, crud
-from datatypes import ProcessingState, TaskEnum, GlobalState
+from datatypes import ProcessingState, TaskEnum
+from global_state import GlobalState, Observer
+from server_v2 import get_db
 
 
-class ServerStateMachine:
+class ServerStateMachine(Observer):
     _model_name = 'rtdetr-x.pt'
     _db = None
     _db_video = None
@@ -20,7 +23,8 @@ class ServerStateMachine:
     _save_path = None
 
     @classmethod
-    def set_state(cls, db: database.database.SessionLocal, new_state: ProcessingState,
+    def set_state(cls, db: database.database.SessionLocal = Depends(get_db),
+                  new_state: ProcessingState = ProcessingState.EMPTY,
                   task: TaskEnum = TaskEnum.Baggage,
                   **kwargs) -> dict:
         """
@@ -48,7 +52,8 @@ class ServerStateMachine:
             model_name = kwargs.get("model_name")
 
             # add database entry
-            video = schemas.VideoEntryCreate(file_name=save_path, state=GlobalState.get_state().name, model_name=model_name,
+            video = schemas.VideoEntryCreate(file_name=save_path, state=GlobalState.get_state().name,
+                                             model_name=model_name,
                                              task=task.name)
             cls._db_video = crud.create_video(video=video, db=cls._db)
 
@@ -66,7 +71,8 @@ class ServerStateMachine:
             video_id = cls._db_video.id
 
             # update the video state in the database
-            video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name, state=GlobalState.get_state().name,
+            video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name,
+                                       state=GlobalState.get_state().name,
                                        model_name=cls._db_video.model_name, task=task.name)
             cls._db_video = crud.update_video(video=video, db=cls._db)
 
@@ -74,6 +80,12 @@ class ServerStateMachine:
         elif GlobalState.get_state() == ProcessingState.ABORTED:
             baggage_processing.ABORT_FLAG = True
             return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
+
+    @classmethod
+    def update(cls, state: ProcessingState):
+        print("State updated to: ", state)
+        cls.set_state(db=cls._db, new_state=state, task=TaskEnum.Baggage, background_tasks=None,
+                      save_path=cls._save_path, )
 
     @classmethod
     def get_state(cls):
