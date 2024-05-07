@@ -147,7 +147,7 @@ async def set_model(model: str):
 
     # if we are processing a video, we cannot change the model
     try:
-        state_machine.set_state(server_state_machine.ProcessingState.PROCESSING)
+        state_machine.set_state(server_state_machine.ProcessingState.PROCESSING, )
     except ValueError:
         raise HTTPException(status_code=400, detail="Cannot change the model while processing a video")
 

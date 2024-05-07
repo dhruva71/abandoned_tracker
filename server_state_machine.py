@@ -28,7 +28,7 @@ class ServerStateMachine:
     _db_video = None
 
     @classmethod
-    def set_state(cls, new_state: ProcessingState, task: TaskEnum, db: database.database.SessionLocal,
+    def set_state(cls, new_state: ProcessingState, task: TaskEnum = TaskEnum.Baggage, db: database.database.SessionLocal = None,
                   **kwargs) -> dict:
         """
         Set the state of the server state machine
