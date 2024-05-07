@@ -8,6 +8,18 @@ class ProcessingState(Enum):
     ABORTED = 3
 
 
+class GlobalState:
+    _state: ProcessingState = ProcessingState.EMPTY
+
+    @classmethod
+    def get_state(cls):
+        return cls._state
+
+    @classmethod
+    def set_state(cls, state: ProcessingState):
+        cls._state = state
+
+
 class TaskEnum(Enum):
     Baggage = "Baggage"
     Fall = "Fall"

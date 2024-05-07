@@ -6,12 +6,12 @@ from typing import Dict
 from fastapi import BackgroundTasks
 import baggage_processing
 import database.database
+import models
 from database import schemas, crud
-from datatypes import ProcessingState, TaskEnum
+from datatypes import ProcessingState, TaskEnum, GlobalState
 
 
 class ServerStateMachine:
-    _state: ProcessingState = ProcessingState.EMPTY
     _model_name = 'rtdetr-x.pt'
     _db = None
     _db_video = None
@@ -31,16 +31,16 @@ class ServerStateMachine:
         :param kwargs: Additional arguments, directly passed to the background task.
         :return:
         """
-        if cls._state == ProcessingState.PROCESSING and new_state == ProcessingState.PROCESSING:
+        if GlobalState.get_state() == ProcessingState.PROCESSING and new_state == ProcessingState.PROCESSING:
             raise ValueError("Cannot set state to PROCESSING when already processing")
 
         print("Setting state to: ", new_state)
-        cls._state = new_state
+        GlobalState.set_state(new_state)
         cls._db = db
 
-        if cls._state == ProcessingState.EMPTY:
-            return {"status": cls._state.name}
-        elif cls._state == ProcessingState.PROCESSING:
+        if GlobalState.get_state() == ProcessingState.EMPTY:
+            return {"status": GlobalState.get_state().name}
+        elif GlobalState.get_state() == ProcessingState.PROCESSING:
             if cls._db is None:
                 raise ValueError("Database session not provided")
             background_tasks: BackgroundTasks = kwargs.get("background_tasks")
@@ -48,7 +48,7 @@ class ServerStateMachine:
             model_name = kwargs.get("model_name")
 
             # add database entry
-            video = schemas.VideoEntryCreate(file_name=save_path, state=cls._state.name, model_name=model_name,
+            video = schemas.VideoEntryCreate(file_name=save_path, state=GlobalState.get_state().name, model_name=model_name,
                                              task=task.name)
             cls._db_video = crud.create_video(video=video, db=cls._db)
 
@@ -59,49 +59,49 @@ class ServerStateMachine:
                 background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
             else:
                 raise ValueError("Invalid task")
-            return {"status": cls._state.name, "save_path": save_path, "model_name": model_name}
-        elif cls._state == ProcessingState.COMPLETED:
+            return {"status": GlobalState.get_state().name, "save_path": save_path, "model_name": model_name}
+        elif GlobalState.get_state() == ProcessingState.COMPLETED:
             # set the state of the video in the database
             # get video id from _db_video
             video_id = cls._db_video.id
 
             # update the video state in the database
-            video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name, state=cls._state.name,
+            video = schemas.VideoEntry(id=video_id, file_name=cls._db_video.file_name, state=GlobalState.get_state().name,
                                        model_name=cls._db_video.model_name, task=task.name)
             cls._db_video = crud.update_video(video=video, db=cls._db)
 
-            return {"status": cls._state.name, "output_dir": cls._output_dir}
-        elif cls._state == ProcessingState.ABORTED:
+            return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
+        elif GlobalState.get_state() == ProcessingState.ABORTED:
             baggage_processing.ABORT_FLAG = True
-            return {"status": cls._state.name, "output_dir": cls._output_dir}
+            return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
 
     @classmethod
     def get_state(cls):
-        return cls._state
+        return GlobalState.get_state()
 
     @classmethod
     def is_processing(cls):
-        return cls._state == ProcessingState.PROCESSING
+        return GlobalState.get_state() == ProcessingState.PROCESSING
 
     @classmethod
     def is_completed(cls):
-        return cls._state == ProcessingState.COMPLETED
+        return GlobalState.get_state() == ProcessingState.COMPLETED
 
     @classmethod
     def is_aborted(cls):
-        return cls._state == ProcessingState.ABORTED
+        return GlobalState.get_state() == ProcessingState.ABORTED
 
     @classmethod
     def abort(cls) -> Dict[str, str]:
-        cls._state = ProcessingState.ABORTED
-        return {"status": cls._state.name, "output_dir": baggage_processing.output_dir}
+        GlobalState.set_state(ProcessingState.ABORTED)
+        return {"status": GlobalState.get_state().name, "output_dir": baggage_processing.output_dir}
 
     @classmethod
     def set_model(cls, model_name) -> Dict[str, str]:
-        if cls._state == ProcessingState.PROCESSING:
+        if GlobalState.get_state() == ProcessingState.PROCESSING:
             raise ValueError("Cannot change the model while processing a video")
 
-        if model_name not in baggage_processing.model_names:
+        if model_name not in models.model_names:
             raise ValueError("Invalid model name")
 
         cls._model_name = model_name
@@ -113,8 +113,8 @@ class ServerStateMachine:
         Used for /status endpoint
         :return:
         """
-        status_dict = {"status": cls._state.name, "model": cls._model_name, }
-        if cls._state == ProcessingState.PROCESSING:
+        status_dict = {"status": GlobalState.get_state().name, "model": cls._model_name, }
+        if GlobalState.get_state() == ProcessingState.PROCESSING:
             status_dict["frame_count"] = baggage_processing.FRAME_COUNT
             status_dict["frames_to_process"] = baggage_processing.FRAMES_TO_PROCESS
         return status_dict
