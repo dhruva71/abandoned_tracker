@@ -82,7 +82,10 @@ class ServerStateMachine(Observer):
             # set the state of the video in the database
             # get video id from _db_video
             video_id = cls._db_video.id
-            video = schemas.VideoEntryUpdateState(id=video_id, state=GlobalState.get_state().name,
+            video = schemas.VideoEntryUpdateState(id=video_id, file_name=str(cls._save_path),
+                                                  state=GlobalState.get_state().name,
+                                                  model_name=cls._model_name,
+                                                  task=task.name,
                                                   num_frames=GlobalState.get_frame_count())
             cls._db_video = crud.update_video_state(video=video, db=cls._db)
 
@@ -97,8 +100,6 @@ class ServerStateMachine(Observer):
                                                   state=GlobalState.get_state().name,
                                                   model_name=cls._model_name,
                                                   task=task.name,
-                                                  # upload_timestamp=datetime.datetime.now().strftime(
-                                                  #     "%Y-%m-%d %H:%M:%S"),
                                                   num_frames=GlobalState.get_frame_count())
             cls._db_video = crud.update_video_state(video=video, db=cls._db)
 
