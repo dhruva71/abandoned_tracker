@@ -6,13 +6,13 @@ from pathlib import Path
 from fastapi import FastAPI, UploadFile, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 import database.database
+import database.crud
 import datatypes
-import server_state_machine
+from state import server_state_machine
 import models
-from global_state import GlobalState
+from state.global_state import GlobalState
 from database.database import engine, get_db
 
 PORT = 9001
@@ -165,6 +165,14 @@ async def set_model(model: str, db=Depends(get_db)):
     finally:
         return return_value
 
+
+# get details of a video from db using its id
+@app.get("/video/{video_id}")
+async def get_video(video_id: str, db=Depends(get_db)):
+    video = database.crud.get_video_by_video_id(db, video_id=video_id)
+    if video is None:
+        raise HTTPException(status_code=404, detail="Video not found")
+    return video
 
 # To run the server:
 # uvicorn script_name:app --reload

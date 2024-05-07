@@ -12,7 +12,7 @@ import models
 from database import schemas, crud
 from database.database import get_db
 from datatypes import ProcessingState, TaskEnum
-from global_state import GlobalState, Observer
+from state.global_state import GlobalState, Observer
 
 
 class ServerStateMachine(Observer):
@@ -52,8 +52,11 @@ class ServerStateMachine(Observer):
             save_path = kwargs.get("save_path").replace('\\\\', "\\")
             model_name = kwargs.get("model_name")
 
+            video_id = GlobalState.get_video_id()
+            print("Processing video ID: ", video_id)
+
             # add database entry
-            video = schemas.VideoEntryCreate(file_name=save_path, state=GlobalState.get_state().name,
+            video = schemas.VideoEntryCreate(video_id=video_id, file_name=save_path, state=GlobalState.get_state().name,
                                              model_name=model_name,
                                              task=task.name,
                                              upload_timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -67,7 +70,8 @@ class ServerStateMachine(Observer):
                 background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
             else:
                 raise ValueError("Invalid task")
-            return {"status": GlobalState.get_state().name, "save_path": save_path, "model_name": model_name}
+            return {"status": GlobalState.get_state().name, "save_path": save_path, "model_name": model_name,
+                    "video_id": video_id}
         elif GlobalState.get_state() == ProcessingState.COMPLETED:
             # set the state of the video in the database
             # get video id from _db_video
@@ -132,11 +136,13 @@ class ServerStateMachine(Observer):
         Used for /status endpoint
         :return:
         """
-        status_dict = {"status": GlobalState.get_state().name, "model": cls._model_name, }
+        status_dict = {"status": GlobalState.get_state().name, "model": cls._model_name,
+                       }
         if GlobalState.get_state() != ProcessingState.EMPTY:
             status_dict["frame_count"] = GlobalState.get_frame_count()
             status_dict["frames_to_process"] = GlobalState.get_frames_to_process()
             status_dict["output_dir"] = GlobalState.get_output_dir()
+            status_dict["video_id"] = GlobalState.get_video_id()
         return status_dict
 
     @classmethod
@@ -152,7 +158,9 @@ class ServerStateMachine(Observer):
 
         # get output directory path as a string
         output_dir_str = str(cls._output_dir)
+
         GlobalState.set_output_dir(output_dir_str)
+        GlobalState.set_video_id(random_folder_name)
 
         # save the video to the folder, with the same name as the folder
         cls._save_path = cls._output_dir / f'{random_folder_name}.{filename.split(".")[-1]}'

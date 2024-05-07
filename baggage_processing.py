@@ -9,7 +9,7 @@ from ultralytics.utils.plotting import Annotator, colors
 # from ultralytics_experimental.server.file_utils import save_frame
 from datatypes import ProcessingState
 from file_utils import save_frame
-from global_state import GlobalState
+from state.global_state import GlobalState
 
 # from ultralytics_experimental.server import output_dir
 

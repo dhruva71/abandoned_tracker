@@ -57,13 +57,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverLocal}}/frames/1dz2jnvl84",
+					"raw": "{{serverLocal}}/frames/mn6mx1qbtl",
 					"host": [
 						"{{serverLocal}}"
 					],
 					"path": [
 						"frames",
-						"1dz2jnvl84"
+						"mn6mx1qbtl"
 					]
 				}
 			},
@@ -75,14 +75,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverLocal}}/frame/1dz2jnvl84/_118.jpg",
+					"raw": "{{serverLocal}}/frame/mn6mx1qbtl/mn6mx1qbtl_118.jpg",
 					"host": [
 						"{{serverLocal}}"
 					],
 					"path": [
 						"frame",
-						"1dz2jnvl84",
-						"_118.jpg"
+						"mn6mx1qbtl",
+						"mn6mx1qbtl_118.jpg"
 					]
 				}
 			},
@@ -154,6 +154,36 @@
 					],
 					"path": [
 						"abort"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Video info from db",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"abort\":\"True\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{serverLocal}}/video/mn6mx1qbtl",
+					"host": [
+						"{{serverLocal}}"
+					],
+					"path": [
+						"video",
+						"mn6mx1qbtl"
 					]
 				}
 			},

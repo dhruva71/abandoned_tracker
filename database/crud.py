@@ -45,6 +45,16 @@ def delete_video(db: Session, video_id: int):
     return db_video
 
 
+# function to get all videos of a particular task
+def get_videos_by_task(db: Session, task: str):
+    return db.query(database.VideoEntry).filter(database.VideoEntry.task == task).all()
+
+
+# function to get info from a video by its video_id
+def get_video_by_video_id(db: Session, video_id: str):
+    return db.query(database.VideoEntry).filter(database.VideoEntry.video_id == video_id).first()
+
+
 def get_task(db: Session, task_id: int):
     return db.query(database.Task).filter(database.Task.id == task_id).first()
 

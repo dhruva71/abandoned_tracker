@@ -16,7 +16,7 @@ class GlobalState:
     _state: ProcessingState = ProcessingState.EMPTY
     _frame_count: int = 0
     _frames_to_process: int = 0
-    _output_dir: str = "output_frames"
+    _output_dir: str = "../output_frames"
     _video_id: str = ""
 
     _observers: list[Observer] = []

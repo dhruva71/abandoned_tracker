@@ -6,6 +6,7 @@ from datatypes import TaskEnum
 class VideoEntryBase(BaseModel):
     file_name: str
     state: str
+    video_id: str
     model_name: str
     task: str
 
