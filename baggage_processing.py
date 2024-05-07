@@ -7,7 +7,7 @@ from ultralytics import YOLO, RTDETR, NAS
 from ultralytics.utils.plotting import Annotator, colors
 
 # from ultralytics_experimental.server.file_utils import save_frame
-from datatypes import ProcessingState
+from datatypes import ProcessingState, GlobalState
 
 # from ultralytics_experimental.server import output_dir
 
@@ -19,7 +19,6 @@ abandoned_frames: list = []
 
 
 def track_objects(video_path, model_name, output_dir: str) -> list:
-    global PROCESSING_STATE
     global FRAME_COUNT
     global FRAMES_TO_PROCESS
     global ABORT_FLAG
@@ -94,9 +93,8 @@ def track_objects(video_path, model_name, output_dir: str) -> list:
     FRAME_COUNT = start_frame
     # Loop through the video frames
     while cap.isOpened():
-        if ABORT_FLAG:
-            print(f"Abort flag is enabled. Aborting video processing")
-            PROCESSING_STATE = ProcessingState.ABORTED
+        if GlobalState.get_state() == ProcessingState.ABORTED:
+            print("Aborting processing")
             break
 
         # Read a frame from the video
@@ -251,8 +249,9 @@ def track_objects(video_path, model_name, output_dir: str) -> list:
     if not CONSOLE_MODE:
         cv2.destroyAllWindows()
 
+    # unclean separation, should happen via StateMachine
     # set the processing state to completed
-    if PROCESSING_STATE != ProcessingState.ABORTED:
-        PROCESSING_STATE = ProcessingState.COMPLETED
+    if GlobalState.get_state() != ProcessingState.ABORTED:
+        GlobalState.set_state(ProcessingState.COMPLETED)
 
     return abandoned_frames
