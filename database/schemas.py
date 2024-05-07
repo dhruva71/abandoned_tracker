@@ -5,15 +5,15 @@ from datatypes import TaskEnum
 
 class VideoEntryBase(BaseModel):
     file_name: str
-    state: str
-    video_id: str
-    model_name: str
     task: str
 
 
 class VideoEntryCreate(VideoEntryBase):
     upload_timestamp: str
     task: str
+    state: str
+    video_id: str
+    model_name: str
 
     class Config:
         orm_mode = True
@@ -29,7 +29,9 @@ class VideoEntry(VideoEntryBase):
 
 
 class VideoEntryUpdateState(VideoEntryBase):
+    id: int
     state: str
+    num_frames: int
 
     class Config:
         orm_mode = True

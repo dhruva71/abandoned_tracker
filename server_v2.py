@@ -24,9 +24,12 @@ database.database.Base.metadata.create_all(bind=engine)
 async def lifespan(app: FastAPI):
     print(f"Starting server on port {PORT}")
     try:
+        GlobalState.add_observer(server_state_machine.ServerStateMachine())
         yield
     finally:
         print("Shutting down server")
+
+        GlobalState.clear_observers()
         await app.state.shutdown()
 
 
@@ -137,8 +140,8 @@ async def get_processing_status():
 
 @app.post('/abort')
 async def set_abort_flag(abort: bool = True):
+    # GlobalState.set_state(datatypes.ProcessingState.ABORTED)
     return state_machine.abort()
-
 
 @app.get("/models")
 async def get_models():

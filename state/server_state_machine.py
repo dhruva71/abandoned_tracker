@@ -45,12 +45,18 @@ class ServerStateMachine(Observer):
 
         if GlobalState.get_state() == ProcessingState.EMPTY:
             return {"status": GlobalState.get_state().name}
+
         elif GlobalState.get_state() == ProcessingState.PROCESSING:
             if cls._db is None:
                 raise ValueError("Database session not provided")
             background_tasks: BackgroundTasks = kwargs.get("background_tasks")
             save_path = kwargs.get("save_path").replace('\\\\', "\\")
             model_name = kwargs.get("model_name")
+
+            if background_tasks is None:
+                raise ValueError("Background tasks not provided")
+
+            cls._db_task = task
 
             video_id = GlobalState.get_video_id()
             print("Processing video ID: ", video_id)
@@ -85,17 +91,25 @@ class ServerStateMachine(Observer):
             baggage_processing.ABORT_FLAG = True
 
             # set the state of the video in the database
+            # get video id from _db_video
             video_id = cls._db_video.id
-            video = schemas.VideoEntryUpdateState(id=video_id, state=GlobalState.get_state().name,
+            video = schemas.VideoEntryUpdateState(id=video_id, file_name=str(cls._save_path),
+                                                  state=GlobalState.get_state().name,
+                                                  model_name=cls._model_name,
+                                                  task=task.name,
+                                                  # upload_timestamp=datetime.datetime.now().strftime(
+                                                  #     "%Y-%m-%d %H:%M:%S"),
                                                   num_frames=GlobalState.get_frame_count())
             cls._db_video = crud.update_video_state(video=video, db=cls._db)
 
-            return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir}
+            return {"status": GlobalState.get_state().name, "output_dir": cls._output_dir,
+                    "video_id": GlobalState.get_video_id()}
 
     @classmethod
-    def update(cls, state: ProcessingState, frame_count: int, frames_to_process: int, output_dir: str):
+    def update(cls, state: ProcessingState, frame_count: int, frames_to_process: int, output_dir: str,
+               background_tasks=BackgroundTasks):
         print("State updated to: ", state)
-        cls.set_state(db=cls._db, new_state=state, task=TaskEnum.Baggage, background_tasks=None,
+        cls.set_state(db=cls._db, new_state=state, task=TaskEnum.Baggage, background_tasks=background_tasks,
                       save_path=cls._save_path, model_name=cls._model_name)
 
     @classmethod
@@ -117,7 +131,8 @@ class ServerStateMachine(Observer):
     @classmethod
     def abort(cls) -> Dict[str, str]:
         GlobalState.set_state(ProcessingState.ABORTED)
-        return {"status": GlobalState.get_state().name, "output_dir": GlobalState.get_output_dir()}
+        cls.set_state(db=cls._db, new_state=ProcessingState.ABORTED, task=cls._db_task, )
+        return {"status": GlobalState.get_state().name, "output_dir": GlobalState.get_output_dir(), "video_id": GlobalState.get_video_id()}
 
     @classmethod
     def set_model(cls, model_name) -> Dict[str, str]:

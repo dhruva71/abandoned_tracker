@@ -57,13 +57,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverLocal}}/frames/mn6mx1qbtl",
+					"raw": "{{serverLocal}}/frames/6qzfof24mn",
 					"host": [
 						"{{serverLocal}}"
 					],
 					"path": [
 						"frames",
-						"mn6mx1qbtl"
+						"6qzfof24mn"
 					]
 				}
 			},
@@ -177,13 +177,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{serverLocal}}/video/mn6mx1qbtl",
+					"raw": "{{serverLocal}}/video/6qzfof24mn",
 					"host": [
 						"{{serverLocal}}"
 					],
 					"path": [
 						"video",
-						"mn6mx1qbtl"
+						"6qzfof24mn"
 					]
 				}
 			},
