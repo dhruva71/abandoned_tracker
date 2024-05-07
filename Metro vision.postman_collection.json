@@ -18,6 +18,13 @@
 							"key": "file",
 							"type": "file",
 							"src": "/C:/Users/onlin/PycharmProjects/baggage-detection/videos/LeftObject_1.avi"
+						},
+						{
+							"key": "task",
+							"value": "Baggage",
+							"description": "Possible values: Baggage, Fall, Loitering, Fight, Count",
+							"type": "text",
+							"disabled": true
 						}
 					]
 				},
@@ -40,9 +47,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverLocal}}/status",
+					"raw": "{{serverRemote}}/status",
 					"host": [
-						"{{serverLocal}}"
+						"{{serverRemote}}"
 					],
 					"path": [
 						"status"
@@ -57,13 +64,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverLocal}}/frames/6qzfof24mn",
+					"raw": "{{serverRemote}}/frames/w4n40f8gwo",
 					"host": [
-						"{{serverLocal}}"
+						"{{serverRemote}}"
 					],
 					"path": [
 						"frames",
-						"6qzfof24mn"
+						"w4n40f8gwo"
 					]
 				}
 			},
@@ -75,14 +82,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverLocal}}/frame/mn6mx1qbtl/mn6mx1qbtl_118.jpg",
+					"raw": "{{serverRemote}}/frame/w4n40f8gwo/w4n40f8gwo_258.jpg",
 					"host": [
-						"{{serverLocal}}"
+						"{{serverRemote}}"
 					],
 					"path": [
 						"frame",
-						"mn6mx1qbtl",
-						"mn6mx1qbtl_118.jpg"
+						"w4n40f8gwo",
+						"w4n40f8gwo_258.jpg"
 					]
 				}
 			},
@@ -177,13 +184,42 @@
 					}
 				},
 				"url": {
-					"raw": "{{serverLocal}}/video/6qzfof24mn",
+					"raw": "{{serverLocal}}/video/al6jmv9z8h",
 					"host": [
 						"{{serverLocal}}"
 					],
 					"path": [
 						"video",
-						"6qzfof24mn"
+						"al6jmv9z8h"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "version",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"abort\":\"True\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{serverRemote}}/version",
+					"host": [
+						"{{serverRemote}}"
+					],
+					"path": [
+						"version"
 					]
 				}
 			},
