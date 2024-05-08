@@ -27,7 +27,8 @@ def detect_fights(video_path, model_name) -> list:
     global ABORT_FLAG
     global abandoned_frames
 
-    model_name = 'fight_det_model.pt'
+    # model_name = 'fight_det_model.pt'
+    model_name = 'fight_detect_dhruva_yolov8x.pt'
     model = YOLO(model_name)
 
     output_dir = GlobalState.get_output_dir()
@@ -112,7 +113,7 @@ def detect_fights(video_path, model_name) -> list:
                                     line_width=1,
                                     show_labels=False,
                                     iou=0.1,
-                                    conf=0.05,
+                                    conf=0.3,
                                     imgsz=IMAGE_SIZE,
                                     )
 
