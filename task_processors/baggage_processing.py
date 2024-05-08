@@ -31,7 +31,7 @@ def track_objects(video_path, model_name) -> list:
     track_history = defaultdict(list)
     static_frame_count = defaultdict(int)
     static_threshold = 150  # movement threshold in pixels
-    abandonment_frames_threshold = 100  # frames threshold for stationary alert
+    abandonment_frames_threshold = 125  # frames threshold for stationary alert
     save_every_x_frames = 30
     use_old_frames_limit = 90  # use old frames to track objects for this number of frames
     using_old_frames = False
