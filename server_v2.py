@@ -91,6 +91,8 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, tas
                                            task=datatypes.TaskEnum[
                                                task] if task in datatypes.TaskEnum.__members__ else datatypes.TaskEnum.Baggage)
 
+    except HTTPException as e:
+        raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         GlobalState.reset_state()
         raise HTTPException(status_code=500, detail=str(e))
@@ -141,7 +143,7 @@ async def get_abandoned_frames(video_id: str):
 
 @app.get("/version")
 async def get_version():
-    return {"version": "0.2.1"}
+    return {"version": "0.2.2"}
 
 
 @app.get("/status")

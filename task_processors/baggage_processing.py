@@ -27,6 +27,16 @@ def track_objects(video_path, model_name) -> list:
     global ABORT_FLAG
     global abandoned_frames
 
+    # Store the track history and static frames count
+    track_history = defaultdict(list)
+    static_frame_count = defaultdict(int)
+    static_threshold = 100  # movement threshold in pixels
+    abandonment_frames_threshold = 100  # frames threshold for stationary alert
+    save_every_x_frames = 30
+    use_old_frames_limit = 90  # use old frames to track objects for this number of frames
+    using_old_frames = False
+    old_frame_counter = 0
+
     if model_name.startswith('yolov') or model_name.startswith('gelan'):
         model = YOLO(model_name)
     elif model_name.startswith('rtdetr'):
@@ -35,6 +45,7 @@ def track_objects(video_path, model_name) -> list:
         model = NAS(model_name)
 
     output_dir = GlobalState.get_output_dir()
+
 
     torch.cuda.set_device(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -64,15 +75,6 @@ def track_objects(video_path, model_name) -> list:
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(f'abandoned_{video_path.split("/")[-1].split(".")[0]}_{model_name.split(".")[0]}.avi', fourcc,
                           fps, (frame_width, frame_height))
-
-    # Store the track history and static frames count
-    track_history = defaultdict(list)
-    static_frame_count = defaultdict(int)
-    static_threshold = 50  # movement threshold in pixels
-    abandonment_frames_threshold = 100  # frames threshold for stationary alert
-    use_old_frames_limit = 90  # use old frames to track objects for this number of frames
-    using_old_frames = False
-    old_frame_counter = 0
 
     old_tracks = []
     old_classes = []
@@ -216,7 +218,7 @@ def track_objects(video_path, model_name) -> list:
                     print(f"Abandonment Alert: ID {track_id}")
 
                     # if static_frame_count[track_id] - abandonment_frames_threshold % 1 == 0:
-                    if static_frame_count[track_id] % 10 == 0:
+                    if static_frame_count[track_id] % save_every_x_frames == 0:
                         # add the frame to the abandoned frames list
                         abandoned_frames.append(annotated_frame)
 
