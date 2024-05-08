@@ -128,7 +128,9 @@ def track_objects(video_path, model_name) -> list:
                 print(f"Resized frame to {square_size}x{square_size}")
 
             # Run tracking on the frame
-            results = model.track(frame, persist=True, show=False, classes=[26, 28],
+            results = model.track(frame,
+                                  persist=True,
+                                  show=False, classes=[26, 28],
                                   tracker='bytetrack.yaml',
                                   # tracker='botsort.yaml',
                                   vid_stride=5,

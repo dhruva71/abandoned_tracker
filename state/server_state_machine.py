@@ -6,7 +6,7 @@ from typing import Dict
 
 from fastapi import BackgroundTasks, Depends
 
-import baggage_processing
+from task_processors import baggage_processing, fight_processing
 import database.database
 import models
 from database import schemas, crud
@@ -75,6 +75,8 @@ class ServerStateMachine(Observer):
             # TODO: Add support for other tasks here
             if task == TaskEnum.Baggage:
                 background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
+            if task == TaskEnum.Fight:
+                background_tasks.add_task(fight_processing.detect_fights, save_path, model_name)
             else:
                 raise ValueError("Invalid task")
             return {"status": GlobalState.get_state().name, "save_path": save_path, "model_name": model_name,
