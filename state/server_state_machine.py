@@ -60,7 +60,7 @@ class ServerStateMachine(Observer):
             cls._db_task = task
 
             video_id = GlobalState.get_video_id()
-            print("Processing video ID: ", video_id)
+            print("Processing video ID: ", video_id, "Save path: ", save_path, "Model name: ", model_name, "Task: ", task.name)
 
             # add database entry
             video = schemas.VideoEntryCreate(video_id=video_id, file_name=save_path, state=GlobalState.get_state().name,
@@ -74,8 +74,10 @@ class ServerStateMachine(Observer):
             # to avoid blocking the main thread
             # TODO: Add support for other tasks here
             if task == TaskEnum.Baggage:
+                print(f'Received task: {task.name}')
                 background_tasks.add_task(baggage_processing.track_objects, save_path, model_name)
-            if task == TaskEnum.Fight:
+            elif task == TaskEnum.Fight:
+                print(f'Received task: {task.name}')
                 background_tasks.add_task(fight_processing.detect_fights, save_path, model_name)
             else:
                 raise ValueError("Invalid task")

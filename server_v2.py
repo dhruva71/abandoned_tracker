@@ -69,6 +69,7 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, tas
     print(f"Received video: {file.filename}, task: {task}")
 
     save_path = state_machine.get_save_path(file.filename)
+    print(f"Saving video to {save_path}, task: {task}")
     try:
         if state_machine.is_processing():
             raise HTTPException(status_code=400, detail="A video is already being processed")
@@ -78,9 +79,9 @@ async def analyze_video(background_tasks: BackgroundTasks, file: UploadFile, tas
                 print(f"Video saved to {save_path}")
 
             # clear output directory
-            for file in output_dir.iterdir():
-                if file.is_file():
-                    file.unlink()
+            # for file in output_dir.iterdir():
+            #     if file.is_file():
+            #         file.unlink()
 
             return state_machine.set_state(new_state=datatypes.ProcessingState.PROCESSING,
                                            background_tasks=background_tasks,
