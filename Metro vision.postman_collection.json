@@ -17,14 +17,7 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/C:/Users/onlin/PycharmProjects/baggage-detection/videos/LeftObject_1.avi"
-						},
-						{
-							"key": "task",
-							"value": "Baggage",
-							"description": "Possible values: Baggage, Fall, Loitering, Fight, Count",
-							"type": "text",
-							"disabled": true
+							"src": "/home/dhruva/PycharmProjects/baggage-detection/videos/LeftObject_1.avi"
 						}
 					]
 				},
@@ -64,13 +57,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverRemote}}/frames/w4n40f8gwo",
+					"raw": "{{serverRemote}}/frames/5k3b09oswl",
 					"host": [
 						"{{serverRemote}}"
 					],
 					"path": [
 						"frames",
-						"w4n40f8gwo"
+						"5k3b09oswl"
 					]
 				}
 			},
@@ -184,13 +177,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{serverLocal}}/video/al6jmv9z8h",
+					"raw": "{{serverRemote}}/video/o0r2ghljzf",
 					"host": [
-						"{{serverLocal}}"
+						"{{serverRemote}}"
 					],
 					"path": [
 						"video",
-						"al6jmv9z8h"
+						"o0r2ghljzf"
 					]
 				}
 			},
@@ -220,6 +213,45 @@
 					],
 					"path": [
 						"version"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "videos",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"abort\":\"True\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{serverLocal}}/videos?limit=5&skip=0",
+					"host": [
+						"{{serverLocal}}"
+					],
+					"path": [
+						"videos"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "5"
+						},
+						{
+							"key": "skip",
+							"value": "0"
+						}
 					]
 				}
 			},

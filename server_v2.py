@@ -188,6 +188,11 @@ async def get_video(video_id: str, db=Depends(get_db)):
         raise HTTPException(status_code=404, detail="Video not found")
     return video
 
+# endpoint to expose all videos in the database
+@app.get("/videos")
+async def get_videos(skip: int = 0, limit: int = 100, db=Depends(get_db)):
+    videos = database.crud.get_videos(db, skip=skip, limit=limit)
+    return videos
 
 # To run the server:
 # uvicorn script_name:app --reload
