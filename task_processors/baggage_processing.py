@@ -18,6 +18,7 @@ SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else o
 SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
 MAKE_FRAME_SQUARE = True
+NORMALIZE_FRAME = False
 CONSOLE_MODE = True  # disables window display
 abandoned_frames: list = []
 
@@ -89,15 +90,6 @@ def track_objects(video_path, model_name) -> list:
     else:
         print(f"Set the frame to {start_frame}")
 
-    def brightness_stabilization(frame):
-        # Convert to YUV color space
-        yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV)
-        # Equalize the histogram of the Y channel (the luminance)
-        yuv[:, :, 0] = cv2.equalizeHist(yuv[:, :, 0])
-        # Convert back to BGR color space
-        frame_eq = cv2.cvtColor(yuv, cv2.COLOR_YUV2BGR)
-        return frame_eq
-
     FRAME_COUNT = start_frame
     # Loop through the video frames
     while cap.isOpened():
@@ -115,11 +107,9 @@ def track_objects(video_path, model_name) -> list:
 
             FRAMES_TO_PROCESS -= 1
 
-            # add blur to the frame
-            # frame = cv2.GaussianBlur(frame, (5, 5), 0)
-
             # perform frame normalization
-            frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX)
+            if NORMALIZE_FRAME:
+                frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX)
 
             if MAKE_FRAME_SQUARE:
                 # make the frame square
@@ -219,7 +209,6 @@ def track_objects(video_path, model_name) -> list:
                     xywh = [(x1 - x2 / 2), (y1 - y2 / 2), (x1 + x2 / 2), (y1 + y2 / 2)]
                     annotator = Annotator(annotated_frame, line_width=2, example=names)
                     annotator.box_label(xywh, label=label, color=colors(int(cls), True), txt_color=(255, 255, 255))
-
 
                     cv2.putText(annotated_frame, f"Abandonment Alert: ID {track_id}", (10, 30 * track_id),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
