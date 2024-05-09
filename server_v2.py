@@ -144,11 +144,21 @@ async def get_abandoned_frames(video_id: str):
 @app.get("/video/{video_id}")
 async def get_video(video_id: str):
     print(f"Getting video {video_id}")
-    video_path = Path("temp_videos") / video_id / f"{video_id}.avi"
-    if video_path.exists():
-        return FileResponse(video_path)
+    # video can be .avi or .mp4
+    video_path_mp4 = Path("temp_videos") / video_id / f"{video_id}.mp4"
+    video_path_avi = Path("temp_videos") / video_id / f"{video_id}.avi"
+    if video_path_mp4.exists():
+        return FileResponse(video_path_mp4)
+    elif video_path_avi.exists():
+        return FileResponse(video_path_avi)
     else:
         raise HTTPException(status_code=404, detail="Video not found")
+
+    # video_path = Path("temp_videos") / video_id / f"{video_id}.avi"
+    # if video_path.exists():
+    #     return FileResponse(video_path)
+    # else:
+    #     raise HTTPException(status_code=404, detail="Video not found")
 
 @app.get("/version")
 async def get_version():
