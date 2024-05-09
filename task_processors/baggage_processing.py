@@ -15,6 +15,7 @@ from state.global_state import GlobalState
 # from ultralytics_experimental.server import output_dir
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
+SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
 MAKE_FRAME_SQUARE = True
 CONSOLE_MODE = True  # disables window display
@@ -45,7 +46,6 @@ def track_objects(video_path, model_name) -> list:
         model = NAS(model_name)
 
     output_dir = GlobalState.get_output_dir()
-
 
     torch.cuda.set_device(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -190,7 +190,7 @@ def track_objects(video_path, model_name) -> list:
             for box, track_id, cls in zip(boxes, track_ids, clss):
 
                 # If the tracking ID is 1
-                if track_id >= 1:
+                if track_id >= 1 and not SHOW_ONLY_ABANDONED_TRACKS:
                     x1, y1, x2, y2 = box
                     label = str(track_id) + " " + names[int(cls)]
                     xywh = [(x1 - x2 / 2), (y1 - y2 / 2), (x1 + x2 / 2), (y1 + y2 / 2)]
@@ -213,6 +213,14 @@ def track_objects(video_path, model_name) -> list:
 
                 # Trigger abandonment alert
                 if static_frame_count[track_id] > abandonment_frames_threshold:
+                    # draw bounding box
+                    x1, y1, x2, y2 = box
+                    label = str(track_id) + " " + names[int(cls)]
+                    xywh = [(x1 - x2 / 2), (y1 - y2 / 2), (x1 + x2 / 2), (y1 + y2 / 2)]
+                    annotator = Annotator(annotated_frame, line_width=2, example=names)
+                    annotator.box_label(xywh, label=label, color=colors(int(cls), True), txt_color=(255, 255, 255))
+
+
                     cv2.putText(annotated_frame, f"Abandonment Alert: ID {track_id}", (10, 30 * track_id),
                                 cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
                     print(f"Abandonment Alert: ID {track_id}")
