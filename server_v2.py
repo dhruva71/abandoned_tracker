@@ -140,6 +140,15 @@ async def get_abandoned_frames(video_id: str):
         "frames": frames_list
     }
 
+# endpoint to get access to video
+@app.get("/video/{video_id}")
+async def get_video(video_id: str):
+    print(f"Getting video {video_id}")
+    video_path = Path("temp_videos") / video_id / f"{video_id}.avi"
+    if video_path.exists():
+        return FileResponse(video_path)
+    else:
+        raise HTTPException(status_code=404, detail="Video not found")
 
 @app.get("/version")
 async def get_version():

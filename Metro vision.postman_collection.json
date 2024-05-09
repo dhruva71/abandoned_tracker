@@ -17,14 +17,20 @@
 						{
 							"key": "file",
 							"type": "file",
-							"src": "/home/dhruva/PycharmProjects/baggage-detection/videos/LeftObject_1.avi"
+							"src": "/C:/Users/onlin/Downloads/TNex/pune_metro_dataset/PhysicalEncounter_With Security_2.avi"
+						},
+						{
+							"key": "task",
+							"value": "Fight",
+							"description": "Possible values: Baggage, Fall, Loitering, Fight, Count",
+							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "{{serverLocal}}/upload-video/",
+					"raw": "{{serverRemote}}/upload-video/",
 					"host": [
-						"{{serverLocal}}"
+						"{{serverRemote}}"
 					],
 					"path": [
 						"upload-video",
@@ -40,9 +46,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverRemote}}/status",
+					"raw": "{{serverLocal}}/status",
 					"host": [
-						"{{serverRemote}}"
+						"{{serverLocal}}"
 					],
 					"path": [
 						"status"
@@ -57,13 +63,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverRemote}}/frames/5k3b09oswl",
+					"raw": "{{serverLocal}}/frames/8urbtqh9nq",
 					"host": [
-						"{{serverRemote}}"
+						"{{serverLocal}}"
 					],
 					"path": [
 						"frames",
-						"5k3b09oswl"
+						"8urbtqh9nq"
 					]
 				}
 			},
@@ -75,14 +81,32 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{serverRemote}}/frame/w4n40f8gwo/w4n40f8gwo_258.jpg",
+					"raw": "{{serverLocal}}/frame/8urbtqh9nq/8urbtqh9nq_62.jpg",
 					"host": [
-						"{{serverRemote}}"
+						"{{serverLocal}}"
 					],
 					"path": [
 						"frame",
-						"w4n40f8gwo",
-						"w4n40f8gwo_258.jpg"
+						"8urbtqh9nq",
+						"8urbtqh9nq_62.jpg"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get video",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{serverLocal}}/video/vatcuszkn7",
+					"host": [
+						"{{serverLocal}}"
+					],
+					"path": [
+						"video",
+						"vatcuszkn7"
 					]
 				}
 			},
@@ -236,7 +260,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{serverLocal}}/videos?limit=5&skip=0",
+					"raw": "{{serverLocal}}/videos?limit=20&skip=0",
 					"host": [
 						"{{serverLocal}}"
 					],
@@ -246,7 +270,7 @@
 					"query": [
 						{
 							"key": "limit",
-							"value": "5"
+							"value": "20"
 						},
 						{
 							"key": "skip",
