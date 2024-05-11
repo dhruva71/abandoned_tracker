@@ -82,7 +82,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     fps = cap.get(cv2.CAP_PROP_FPS)
     FRAMES_TO_PROCESS = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(f'processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, 30,
+    out = cv2.VideoWriter(f'{output_dir}/processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, 30,
                           (frame_width, frame_height))
 
     if start_frame > 0:
@@ -151,7 +151,8 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
                 is_abandoned = not any(
                     intersects(last_bbox, p_bboxes[-1]) for p_bboxes in people_tracks.values() if p_bboxes)
                 if is_abandoned:
-                    print(f"Abandoned: ID {track_id}")
+                    # print(f"Abandoned: ID {track_id}")
+                    print(f"Abandoned baggage")
                     static_frame_count[track_id] += 1
                 else:
                     print(f"Luggage item with ID {track_id} is not abandoned")
@@ -202,9 +203,9 @@ def create_xyxy_from_xywh(x, y, w, h):
     return x1, y1, x2, y2
 
 if __name__ == '__main__':
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'
-    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi'
-    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi'
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi' # 2500
+    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi' # 5300
+    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi' # 3000
     track_objects(video_path=video_path,
                   model_name='rtdetr-x.pt',
                   start_frame=2000)
