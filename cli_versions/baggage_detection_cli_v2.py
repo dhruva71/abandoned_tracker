@@ -43,7 +43,6 @@ def intersects(bbox1, bbox2) -> bool:
 def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     global FRAME_COUNT, FRAMES_TO_PROCESS, ABORT_FLAG, abandoned_frames
 
-    output_dir = None
     video_path = Path(video_path)
     # extract the video name without the extension
     video_name = video_path.stem
@@ -53,7 +52,8 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     # reset video_path to string
     video_path = str(video_path)
 
-    # save the abandoned frame
+    # create directory
+    output_dir = None
     if output_dir is None:
         output_dir = f"output_frames/{video_name}"
         # create the output directory if it does not exist
@@ -82,7 +82,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     fps = cap.get(cv2.CAP_PROP_FPS)
     FRAMES_TO_PROCESS = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(f'processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, fps,
+    out = cv2.VideoWriter(f'{output_dir}/processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, fps,
                           (frame_width, frame_height))
 
     if start_frame > 0:
