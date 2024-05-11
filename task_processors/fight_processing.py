@@ -15,7 +15,7 @@ from state.global_state import GlobalState
 # from ultralytics_experimental.server import output_dir
 
 SHOW_DETECTED_OBJECTS = True  # Set to True to display detected objects, else only shows tracking lines
-IMAGE_SIZE = 1024,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
+IMAGE_SIZE = 640,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
 MAKE_FRAME_SQUARE = True
 CONSOLE_MODE = True  # disables window display
 abandoned_frames: list = []
@@ -28,7 +28,8 @@ def detect_fights(video_path, model_name) -> list:
     global abandoned_frames
 
     # model_name = 'fight_det_model.pt'
-    model_name = 'fight_detect_dhruva_yolov8x.pt'
+    # model_name = 'fight_detect_dhruva_yolov8x.pt'
+    model_name = 'fight_det_v4_dhruva_yolov8x.pt'
     model = YOLO(model_name)
 
     output_dir = GlobalState.get_output_dir()
@@ -108,7 +109,7 @@ def detect_fights(video_path, model_name) -> list:
                                     classes=[0],  # 0 is the class for fight, 1 is the class for non-fight
                                     # tracker='bytetrack.yaml',
                                     # tracker='botsort.yaml',
-                                    vid_stride=5,
+                                    vid_stride=1,
                                     visualize=False,
                                     line_width=1,
                                     show_labels=False,

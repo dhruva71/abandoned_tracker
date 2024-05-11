@@ -6,11 +6,9 @@ import torch
 from ultralytics import YOLO, RTDETR, NAS
 from ultralytics.utils.plotting import Annotator, colors
 
-import state.server_state_machine
 # from ultralytics_experimental.server.file_utils import save_frame
 from datatypes import ProcessingState, TaskEnum
 from file_utils import save_frame
-from state.global_state import GlobalState
 
 # from ultralytics_experimental.server import output_dir
 
@@ -19,11 +17,11 @@ SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024,  # [640,864,1024] has to be a multiple of 32, YOLO adjusts to 640x640
 MAKE_FRAME_SQUARE = True
 NORMALIZE_FRAME = False
-CONSOLE_MODE = True  # disables window display
+CONSOLE_MODE = False  # disables window display
 abandoned_frames: list = []
 
 
-def track_objects(video_path, model_name) -> list:
+def track_objects(video_path, model_name='rtdetr-x.pt') -> list:
     global FRAME_COUNT
     global FRAMES_TO_PROCESS
     global ABORT_FLAG
@@ -45,8 +43,8 @@ def track_objects(video_path, model_name) -> list:
         model = RTDETR(model_name)
     elif model_name.startswith('yolo_nas'):
         model = NAS(model_name)
-
-    output_dir = GlobalState.get_output_dir()
+    else:
+        model = RTDETR(model_name)
 
     torch.cuda.set_device(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -70,9 +68,8 @@ def track_objects(video_path, model_name) -> list:
     fps = cap.get(cv2.CAP_PROP_FPS)
 
     FRAMES_TO_PROCESS = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    GlobalState.set_frames_to_process(FRAMES_TO_PROCESS)
 
-    # Define the codec and create VideoWriter object
+    # Define the codec and create VideoWriter object to write as mp4
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     out = cv2.VideoWriter(f'abandoned_{video_path.split("/")[-1].split(".")[0]}_{model_name.split(".")[0]}.avi', fourcc,
                           fps, (frame_width, frame_height))
@@ -93,16 +90,12 @@ def track_objects(video_path, model_name) -> list:
     FRAME_COUNT = start_frame
     # Loop through the video frames
     while cap.isOpened():
-        if GlobalState.get_state() == ProcessingState.ABORTED:
-            print("Aborting processing")
-            break
 
         # Read a frame from the video
         success, frame = cap.read()
 
         if success:
             FRAME_COUNT += 1
-            GlobalState.set_frame_count(FRAME_COUNT)
             print(f"Processing frame {FRAME_COUNT}")
 
             FRAMES_TO_PROCESS -= 1
@@ -125,7 +118,7 @@ def track_objects(video_path, model_name) -> list:
                                   show=False, classes=[26, 28],
                                   tracker='bytetrack.yaml',
                                   # tracker='botsort.yaml',
-                                  vid_stride=5,
+                                  vid_stride=1,
                                   visualize=False,
                                   line_width=1,
                                   show_labels=False,
@@ -134,8 +127,6 @@ def track_objects(video_path, model_name) -> list:
                                   imgsz=IMAGE_SIZE,
                                   )
 
-            # Get the boxes and track IDs
-            boxes = results[0].boxes.xywh.cpu()
             try:
                 track_ids = results[0].boxes.id.int().cpu().tolist()
                 clss = results[0].boxes.cls.cpu().tolist()
@@ -219,8 +210,12 @@ def track_objects(video_path, model_name) -> list:
                         # add the frame to the abandoned frames list
                         abandoned_frames.append(annotated_frame)
 
+                        output_dir = None
+                        video_name = video_path.split("/")[-1].split(".")[0]
                         # save the abandoned frame
-                        save_frame(output_dir=output_dir, file_name=f"{GlobalState.get_video_id()}_{FRAME_COUNT}.jpg",
+                        if output_dir is None:
+                            output_dir = "output_frames"
+                        save_frame(output_dir=output_dir, file_name=f"{video_name}_{FRAME_COUNT}.jpg",
                                    frame=annotated_frame)
 
                 # Draw the tracking lines
@@ -256,12 +251,6 @@ def track_objects(video_path, model_name) -> list:
 
     if not CONSOLE_MODE:
         cv2.destroyAllWindows()
-
-    # unclean separation, should happen via StateMachine
-    # set the processing state to completed
-    if GlobalState.get_state() != ProcessingState.ABORTED:
-        GlobalState.set_state(ProcessingState.COMPLETED)
-        state.server_state_machine.ServerStateMachine.set_complete()
 
     return abandoned_frames
 
