@@ -13,7 +13,7 @@ from file_utils import save_frame
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024  # Adjust size, must be a multiple of 32
-MAKE_FRAME_SQUARE = True
+MAKE_FRAME_SQUARE = False
 NORMALIZE_FRAME = False
 CONSOLE_MODE = False  # disables window display
 abandoned_frames = []
@@ -23,10 +23,10 @@ def intersects(bbox1, bbox2):
     # Simple intersection check
     x1, y1, w1, h1 = bbox1
     x2, y2, w2, h2 = bbox2
-    return (x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2)
+    return x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2
 
 
-def track_objects(video_path, model_name='rtdetr-x.pt'):
+def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     global FRAME_COUNT, FRAMES_TO_PROCESS, ABORT_FLAG, abandoned_frames
 
     output_dir = None
@@ -45,7 +45,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt'):
         # create the output directory if it does not exist
         Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-    baggage_class_id = 26  # Update based on your model's specific class ID for baggage
+    baggage_class_id = [26, 28]  # Update based on your model's specific class ID for baggage
     person_class_id = 0  # Update based on your model's specific class ID for person
     baggage_tracks = defaultdict(list)
     people_tracks = defaultdict(list)
@@ -71,6 +71,14 @@ def track_objects(video_path, model_name='rtdetr-x.pt'):
     out = cv2.VideoWriter(f'processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, 30,
                           (frame_width, frame_height))
 
+    if start_frame > 0:
+        successfully_set = cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+        if not successfully_set:
+            print(f"Could not set the frame to {start_frame}")
+            exit()
+        else:
+            print(f"Set the frame to {start_frame}")
+
     FRAME_COUNT = 0
     while cap.isOpened():
         success, frame = cap.read()
@@ -82,7 +90,8 @@ def track_objects(video_path, model_name='rtdetr-x.pt'):
                 square_size = min(frame.shape[0], frame.shape[1])
                 frame = cv2.resize(frame, (square_size, square_size))
 
-            results = model.track(frame, persist=True, show=False, classes=[baggage_class_id, person_class_id],
+            results = model.track(frame, persist=True, show=False,
+                                  classes=[baggage_class_id[0], baggage_class_id[1], person_class_id],
                                   imgsz=IMAGE_SIZE)
             # boxes, track_ids, clss = results.pandas().xyxy[0][['xmin', 'ymin', 'xmax', 'ymax']].values, \
             #     results.pandas().xyxy[0]['track_id'].values, \
@@ -95,23 +104,29 @@ def track_objects(video_path, model_name='rtdetr-x.pt'):
                 boxes = results[0].boxes.xywh.cpu()
                 names = results[0].names
             except AttributeError:
-                    track_ids = []
-                    clss = []
-                    boxes = []
-                    names = []
+                track_ids = []
+                clss = []
+                boxes = []
+                names = []
 
             for box, track_id, cls in zip(boxes, track_ids, clss):
-                if cls == baggage_class_id:
+                if cls == baggage_class_id[0] or cls == baggage_class_id[1]:
                     baggage_tracks[track_id].append(box)
                 elif cls == person_class_id:
                     people_tracks[track_id].append(box)
 
             annotated_frame = frame.copy()
+
+            # display frame number
+            cv2.putText(annotated_frame, f"Frame: {start_frame + FRAME_COUNT}", (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
+
             for track_id, bboxes in baggage_tracks.items():
                 last_bbox = bboxes[-1]
                 is_abandoned = not any(
                     intersects(last_bbox, p_bbox) for p_bboxes in people_tracks.values() for p_bbox in p_bboxes)
                 if is_abandoned:
+                    print(f"Abandoned: ID {track_id}")
                     static_frame_count[track_id] += 1
                 else:
                     static_frame_count[track_id] = 0
@@ -143,7 +158,9 @@ def track_objects(video_path, model_name='rtdetr-x.pt'):
 
 
 if __name__ == '__main__':
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'
+    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi'
     # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi'
     track_objects(video_path=video_path,
-                  model_name='rtdetr-x.pt')
+                  model_name='rtdetr-x.pt',
+                  start_frame=5000)
