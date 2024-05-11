@@ -66,7 +66,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     static_frame_count = defaultdict(int)
     static_threshold = 150  # Movement threshold in pixels
     abandonment_frames_threshold = 1  # Frames threshold for stationary alert
-    save_every_x_frames = 30
+    save_every_x_frames = 5  # Save every x frames
 
     model = RTDETR(model_name)  # Update model selection based on name if needed
     torch.cuda.set_device(0)
@@ -82,7 +82,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     fps = cap.get(cv2.CAP_PROP_FPS)
     FRAMES_TO_PROCESS = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(f'{output_dir}/processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, 30,
+    out = cv2.VideoWriter(f'processed_{Path(video_path).stem}_{model_name.split(".")[0]}.avi', fourcc, fps,
                           (frame_width, frame_height))
 
     if start_frame > 0:
@@ -151,8 +151,8 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
                 is_abandoned = not any(
                     intersects(last_bbox, p_bboxes[-1]) for p_bboxes in people_tracks.values() if p_bboxes)
                 if is_abandoned:
-                    # print(f"Abandoned: ID {track_id}")
-                    print(f"Abandoned baggage")
+                    print(f"Abandoned: ID {track_id}")
+                    # print(f"Abandoned baggage")
                     static_frame_count[track_id] += 1
                 else:
                     print(f"Luggage item with ID {track_id} is not abandoned")
@@ -161,10 +161,12 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
                 if static_frame_count[track_id] > abandonment_frames_threshold:
                     annotator = Annotator(annotated_frame, line_width=2)
                     bounding_box = create_xyxy_from_xywh(*last_bbox)
-                    annotator.box_label(bounding_box, label=f"Abandoned: ID {track_id}", color=colors(0),
+                    # annotator.box_label(bounding_box, label=f"Abandoned: ID {track_id}", color=colors(0),
+                    annotator.box_label(bounding_box, label=f"Abandoned baggage", color=colors(0),
                                         txt_color=(255, 255, 255))
                     abandoned_frames.append(annotated_frame)
-                    print(f"Abandonment Alert: ID {track_id}")
+                    # print(f"Abandonment Alert: ID {track_id}")
+                    # print(f"Abandonment baggage")
 
                     if static_frame_count[track_id] % save_every_x_frames == 0:
                         save_frame(output_dir=output_dir, file_name=f"{video_name}_{FRAME_COUNT}.jpg",
