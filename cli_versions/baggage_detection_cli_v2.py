@@ -10,20 +10,34 @@ from ultralytics.utils.plotting import Annotator, colors
 
 from file_utils import save_frame
 
-SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
+SHOW_DETECTED_OBJECTS = True  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024  # Adjust size, must be a multiple of 32
 MAKE_FRAME_SQUARE = False
 NORMALIZE_FRAME = False
 CONSOLE_MODE = False  # disables window display
 abandoned_frames = []
+DEBUG: bool = True
 
 
-def intersects(bbox1, bbox2):
+def intersects(bbox1, bbox2) -> bool:
+    # bbox1, bbox2 are in the form (x, y, w, h)
+    # convert to x1, y1, x2, y2
+    x11, y11, x12, y12 = create_xyxy_from_xywh(*bbox1)
+    x21, y21, x22, y22 = create_xyxy_from_xywh(*bbox2)
+
     # Simple intersection check
-    x1, y1, w1, h1 = bbox1
-    x2, y2, w2, h2 = bbox2
-    return x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2
+    x1, y1, w1, h1 = create_xyxy_from_xywh(*bbox1)
+    x2, y2, w2, h2 = create_xyxy_from_xywh(*bbox2)
+    # return x1 < x2 + w2 and x1 + w1 > x2 and y1 < y2 + h2 and y1 + h1 > y2
+
+    # adapt: (x1min < x2max AND x2min < x1max AND y1min < y2max AND y2min < y1max)
+    # from: https://stackoverflow.com/questions/20925818/algorithm-to-check-if-two-boxes-overlap
+    # intersection: bool = (x1 < x2 + w2) and (x2 < x1 + w1) and (y1 < y2 + h2) and (y2 < y1 + h1)
+
+    intersection: bool = (x11 < x22) and (x21 < x12) and (y11 < y22) and (y21 < y12)
+
+    return intersection
 
 
 def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
@@ -51,7 +65,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     people_tracks = defaultdict(list)
     static_frame_count = defaultdict(int)
     static_threshold = 150  # Movement threshold in pixels
-    abandonment_frames_threshold = 125  # Frames threshold for stationary alert
+    abandonment_frames_threshold = 1  # Frames threshold for stationary alert
     save_every_x_frames = 30
 
     model = RTDETR(model_name)  # Update model selection based on name if needed
@@ -93,9 +107,6 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
             results = model.track(frame, persist=True, show=False,
                                   classes=[baggage_class_id[0], baggage_class_id[1], person_class_id],
                                   imgsz=IMAGE_SIZE)
-            # boxes, track_ids, clss = results.pandas().xyxy[0][['xmin', 'ymin', 'xmax', 'ymax']].values, \
-            #     results.pandas().xyxy[0]['track_id'].values, \
-            #     results.pandas().xyxy[0]['class'].values
 
             try:
                 track_ids = results[0].boxes.id.int().cpu().tolist()
@@ -117,23 +128,39 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
 
             annotated_frame = frame.copy()
 
+            # display detected objects
+            if SHOW_DETECTED_OBJECTS:
+                for box, track_id, cls in zip(boxes, track_ids, clss):
+                    x, y, w, h = box
+                    label = str(track_id) + " " + names[int(cls)]
+                    xxyy = create_xyxy_from_xywh(x, y, w, h)
+                    annotator = Annotator(annotated_frame, line_width=2)
+                    annotator.box_label(xxyy, label=f"{names[cls]}: ID {track_id}", color=colors(cls),
+                                        txt_color=(255, 255, 255))
+
             # display frame number
             cv2.putText(annotated_frame, f"Frame: {start_frame + FRAME_COUNT}", (10, 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
             for track_id, bboxes in baggage_tracks.items():
                 last_bbox = bboxes[-1]
+
+                # here we check the intersection of the last bbox with all the people bboxes
+                # is_abandoned = any(
+                #     intersects(last_bbox, p_bbox) for p_bboxes in people_tracks.values() for p_bbox in p_bboxes)
                 is_abandoned = not any(
-                    intersects(last_bbox, p_bbox) for p_bboxes in people_tracks.values() for p_bbox in p_bboxes)
+                    intersects(last_bbox, p_bboxes[-1]) for p_bboxes in people_tracks.values() if p_bboxes)
                 if is_abandoned:
                     print(f"Abandoned: ID {track_id}")
                     static_frame_count[track_id] += 1
                 else:
+                    print(f"Luggage item with ID {track_id} is not abandoned")
                     static_frame_count[track_id] = 0
 
                 if static_frame_count[track_id] > abandonment_frames_threshold:
                     annotator = Annotator(annotated_frame, line_width=2)
-                    annotator.box_label(last_bbox, label=f"Abandoned: ID {track_id}", color=colors('red'),
+                    bounding_box = create_bbox_from_xxyy(*last_bbox)
+                    annotator.box_label(bounding_box, label=f"Abandoned: ID {track_id}", color=colors(0),
                                         txt_color=(255, 255, 255))
                     abandoned_frames.append(annotated_frame)
                     print(f"Abandonment Alert: ID {track_id}")
@@ -157,10 +184,24 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     return abandoned_frames
 
 
+def create_bbox_from_xxyy(x1, x2, y1, y2):
+    xywh = [(x1 - x2 / 2), (y1 - y2 / 2), (x1 + x2 / 2), (y1 + y2 / 2)]
+    return xywh
+
+
+def create_xyxy_from_xywh(x, y, w, h):
+    # convert to x1, x2, y1, y2
+    x1 = x
+    x2 = x1 + w
+    y1 = y
+    y2 = y1 + h
+    return x1, y1, x2, y2
+
+
 if __name__ == '__main__':
-    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi'
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'
+    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi'
     # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi'
     track_objects(video_path=video_path,
                   model_name='rtdetr-x.pt',
-                  start_frame=5000)
+                  start_frame=2000)
