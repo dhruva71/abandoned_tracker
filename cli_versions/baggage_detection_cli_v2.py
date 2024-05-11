@@ -10,7 +10,7 @@ from ultralytics.utils.plotting import Annotator, colors
 
 from file_utils import save_frame
 
-SHOW_DETECTED_OBJECTS = True  # Set to True to display detected objects, else only shows tracking lines
+SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024  # Adjust size, must be a multiple of 32
 MAKE_FRAME_SQUARE = False
@@ -159,7 +159,7 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
 
                 if static_frame_count[track_id] > abandonment_frames_threshold:
                     annotator = Annotator(annotated_frame, line_width=2)
-                    bounding_box = create_bbox_from_xxyy(*last_bbox)
+                    bounding_box = create_xyxy_from_xywh(*last_bbox)
                     annotator.box_label(bounding_box, label=f"Abandoned: ID {track_id}", color=colors(0),
                                         txt_color=(255, 255, 255))
                     abandoned_frames.append(annotated_frame)
@@ -191,12 +191,15 @@ def create_bbox_from_xxyy(x1, x2, y1, y2):
 
 def create_xyxy_from_xywh(x, y, w, h):
     # convert to x1, x2, y1, y2
-    x1 = x
-    x2 = x1 + w
-    y1 = y
-    y2 = y1 + h
-    return x1, y1, x2, y2
+    # x1 = x
+    # y1 = y
+    # x2 = x1 + w
+    # y2 = y1 + h
+    # return x1, y1, x2, y2
 
+    x1, y1 = x - w / 2, y - h / 2
+    x2, y2 = x + w / 2, y + h / 2
+    return x1, y1, x2, y2
 
 if __name__ == '__main__':
     video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'
