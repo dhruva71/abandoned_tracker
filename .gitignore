@@ -5,3 +5,4 @@ __pycache__
 temp_videos
 *.pt
 *.avi
+*.mp4
