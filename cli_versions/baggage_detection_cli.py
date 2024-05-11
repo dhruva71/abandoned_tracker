@@ -1,4 +1,5 @@
 from collections import defaultdict
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -6,11 +7,8 @@ import torch
 from ultralytics import YOLO, RTDETR, NAS
 from ultralytics.utils.plotting import Annotator, colors
 
-# from ultralytics_experimental.server.file_utils import save_frame
-from datatypes import ProcessingState, TaskEnum
 from file_utils import save_frame
 
-# from ultralytics_experimental.server import output_dir
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
@@ -71,8 +69,8 @@ def track_objects(video_path, model_name='rtdetr-x.pt') -> list:
 
     # Define the codec and create VideoWriter object to write as mp4
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(f'abandoned_{video_path.split("/")[-1].split(".")[0]}_{model_name.split(".")[0]}.avi', fourcc,
-                          fps, (frame_width, frame_height))
+    out = cv2.VideoWriter(f'processed_{video_path.split("/")[-1].split(".")[0]}_{model_name.split(".")[0]}.avi', fourcc,
+                          30, (frame_width, frame_height))
 
     old_tracks = []
     old_classes = []
@@ -214,7 +212,10 @@ def track_objects(video_path, model_name='rtdetr-x.pt') -> list:
                         video_name = video_path.split("/")[-1].split(".")[0]
                         # save the abandoned frame
                         if output_dir is None:
-                            output_dir = "output_frames"
+                            output_dir = f"output_frames/{video_name}"
+                            # create the output directory if it does not exist
+                            Path(output_dir).mkdir(parents=True, exist_ok=True)
+
                         save_frame(output_dir=output_dir, file_name=f"{video_name}_{FRAME_COUNT}.jpg",
                                    frame=annotated_frame)
 
@@ -256,4 +257,4 @@ def track_objects(video_path, model_name='rtdetr-x.pt') -> list:
 
 
 if __name__ == '__main__':
-    track_objects(video_path='../Left_Object_2.avi', model_name='rtdetr-x.pt')
+    track_objects(video_path=r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi', model_name='rtdetr-x.pt')
