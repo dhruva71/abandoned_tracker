@@ -10,6 +10,9 @@ from ultralytics.utils.plotting import Annotator, colors
 
 from file_utils import save_frame
 
+# Detection based on static + lack of overlap with people.
+
+
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 1024  # Adjust size, must be a multiple of 32

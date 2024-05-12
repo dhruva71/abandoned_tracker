@@ -9,6 +9,8 @@ from ultralytics.utils.plotting import Annotator, colors
 
 from file_utils import save_frame
 
+# Detection based on the lack of movement in baggage.
+
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
