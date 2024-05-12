@@ -219,5 +219,5 @@ if __name__ == '__main__':
     video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Physical_Encounter\Fight_2_Cam2_1.avi'  # 2500
     detect_fights(video_path=video_path,
                   # model_name='../fight_det_model.pt',
-                  model_name=f'../{models[1]}',
+                  model_name=f'../{models[0]}',
                   start_frame=400)
