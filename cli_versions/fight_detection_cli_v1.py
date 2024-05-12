@@ -14,10 +14,10 @@ from file_utils import save_frame
 # Detection based on static + lack of overlap with people.
 # Associates abandoned baggage with people in the scene.
 
-SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
+SHOW_DETECTED_OBJECTS = True  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
 IMAGE_SIZE = 640  # Adjust size, must be a multiple of 32
-MAKE_FRAME_SQUARE = True
+MAKE_FRAME_SQUARE = False
 NORMALIZE_FRAME = False
 CONSOLE_MODE = False  # disables window display
 abandoned_frames = []
@@ -141,8 +141,8 @@ def detect_fights(video_path, model_name='../fight_det_model.pt', start_frame: i
                                     visualize=False,
                                     line_width=1,
                                     show_labels=False,
-                                    iou=0.1,
-                                    conf=0.3,
+                                    iou=0.7,
+                                    conf=0.1,
                                     imgsz=IMAGE_SIZE,
                                     )
 
@@ -219,5 +219,5 @@ if __name__ == '__main__':
     video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Physical_Encounter\Fight_2_Cam2_1.avi'  # 2500
     detect_fights(video_path=video_path,
                   # model_name='../fight_det_model.pt',
-                  model_name=f'../{models[-1]}',
+                  model_name=f'../{models[1]}',
                   start_frame=400)
