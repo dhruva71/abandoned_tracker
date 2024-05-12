@@ -15,7 +15,7 @@ from file_utils import save_frame
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
-IMAGE_SIZE = 1024  # Adjust size, must be a multiple of 32
+IMAGE_SIZE = 640  # Adjust size, must be a multiple of 32
 MAKE_FRAME_SQUARE = False
 NORMALIZE_FRAME = False
 CONSOLE_MODE = False  # disables window display
@@ -71,7 +71,14 @@ def track_objects(video_path, model_name='rtdetr-x.pt', start_frame: int = 0):
     abandonment_frames_threshold = 1  # Frames threshold for stationary alert
     save_every_x_frames = 5  # Save every x frames
 
-    model = RTDETR(model_name)  # Update model selection based on name if needed
+    if model_name.startswith('yolov') or model_name.startswith('gelan'):
+        model = YOLO(model_name)
+    elif model_name.startswith('rtdetr'):
+        model = RTDETR(model_name)
+    elif model_name.startswith('yolo_nas'):
+        model = NAS(model_name)
+    else:
+        model = RTDETR(model_name)
     torch.cuda.set_device(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device=device)
@@ -196,13 +203,6 @@ def create_bbox_from_xxyy(x1, x2, y1, y2):
 
 
 def create_xyxy_from_xywh(x, y, w, h):
-    # convert to x1, x2, y1, y2
-    # x1 = x
-    # y1 = y
-    # x2 = x1 + w
-    # y2 = y1 + h
-    # return x1, y1, x2, y2
-
     x1, y1 = x - w / 2, y - h / 2
     x2, y2 = x + w / 2, y + h / 2
     return x1, y1, x2, y2
@@ -213,4 +213,4 @@ if __name__ == '__main__':
     # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi' # 3000
     track_objects(video_path=video_path,
                   model_name='rtdetr-x.pt',
-                  start_frame=2000)
+                  start_frame=1800)
