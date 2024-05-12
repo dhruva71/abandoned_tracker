@@ -16,8 +16,8 @@ from file_utils import save_frame
 
 SHOW_DETECTED_OBJECTS = False  # Set to True to display detected objects, else only shows tracking lines
 SHOW_ONLY_ABANDONED_TRACKS = True
-IMAGE_SIZE = 1024  # Adjust size, must be a multiple of 32
-MAKE_FRAME_SQUARE = False
+IMAGE_SIZE = 640  # Adjust size, must be a multiple of 32
+MAKE_FRAME_SQUARE = True
 NORMALIZE_FRAME = False
 CONSOLE_MODE = False  # disables window display
 abandoned_frames = []
@@ -44,7 +44,7 @@ def intersects(bbox1, bbox2) -> bool:
     return intersection
 
 
-def detect_fights(video_path, model_name, start_frame: int = 0) -> list:
+def detect_fights(video_path, model_name='../fight_det_model.pt', start_frame: int = 0) -> list:
     global FRAME_COUNT
     global FRAMES_TO_PROCESS
     global ABORT_FLAG
@@ -52,7 +52,6 @@ def detect_fights(video_path, model_name, start_frame: int = 0) -> list:
 
     # model_name = 'fight_det_model.pt'
     # model_name = 'fight_detect_dhruva_yolov8x.pt'
-    model_name = 'fight_det_v4_dhruva_yolov8x.pt'
     model = YOLO(model_name)
 
     video_path = Path(video_path)
@@ -216,9 +215,9 @@ def create_xyxy_from_xywh(x, y, w, h):
 
 
 if __name__ == '__main__':
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi'  # 2500
-    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi' # 5300
-    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi' # 3000
+    models = ['fight_det_v4_dhruva_yolov8x.pt', 'fight_det_model.pt', 'fight_detect_dhruva_yolov8x.pt']
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Physical_Encounter\Fight_2_Cam2_1.avi'  # 2500
     detect_fights(video_path=video_path,
-                  model_name='../fight_det_model.pt',
-                  start_frame=2000)
+                  # model_name='../fight_det_model.pt',
+                  model_name=f'../{models[-1]}',
+                  start_frame=400)
