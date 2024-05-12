@@ -208,9 +208,9 @@ def create_xyxy_from_xywh(x, y, w, h):
     return x1, y1, x2, y2
 
 if __name__ == '__main__':
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi' # 2500
+    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_2_Cam1_1.avi' # 2500
     # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Old\Left_Object_2.avi' # 5300
-    # video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi' # 3000
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Left_Object\Left_Object_1_Cam2_1.avi' # 3000
     track_objects(video_path=video_path,
                   model_name='rtdetr-x.pt',
-                  start_frame=1800)
+                  start_frame=3000)

@@ -49,6 +49,7 @@ def detect_fights(video_path, model_name='../fight_det_model.pt', start_frame: i
     global FRAMES_TO_PROCESS
     global ABORT_FLAG
     global abandoned_frames
+    first_frame:bool = True
 
     # model_name = 'fight_det_model.pt'
     # model_name = 'fight_detect_dhruva_yolov8x.pt'
@@ -95,8 +96,7 @@ def detect_fights(video_path, model_name='../fight_det_model.pt', start_frame: i
 
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter(f'abandoned_{video_path.split("/")[-1].split(".")[0]}_{model_name.split(".")[0]}.avi', fourcc,
-                          fps, (frame_width, frame_height))
+    out = None
 
     if start_frame > 0:
         successfully_set = cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
@@ -169,6 +169,22 @@ def detect_fights(video_path, model_name='../fight_det_model.pt', start_frame: i
                 save_frame(output_dir=output_dir, file_name=f"{video_name}_{FRAME_COUNT}.jpg",
                            frame=annotated_frame)
 
+            if first_frame:
+                first_frame = False
+
+                # get frame dimensions
+                frame_width = annotated_frame.shape[1]
+                frame_height = annotated_frame.shape[0]
+
+                output_file_name = f'{output_dir}/processed_{video_name}_{model_name.split(".")[0]}.avi'
+                print(f'Initializing output writer with {frame_width}x{frame_height}')
+                print(f'Output file: {output_file_name}')
+
+                out = cv2.VideoWriter(
+                    output_file_name,
+                    fourcc,
+                    fps, (frame_width, frame_height))
+
             # Write the frame to the output file
             out.write(annotated_frame)
 
@@ -216,8 +232,11 @@ def create_xyxy_from_xywh(x, y, w, h):
 
 if __name__ == '__main__':
     models = ['fight_det_v4_dhruva_yolov8x.pt', 'fight_det_model.pt', 'fight_detect_dhruva_yolov8x.pt']
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Physical_Encounter\Fight_2_Cam2_1.avi'  # 2500
-    detect_fights(video_path=video_path,
-                  # model_name='../fight_det_model.pt',
-                  model_name=f'../{models[0]}',
-                  start_frame=400)
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Physical_Encounter\Fight_1_Cam1_1.avi'  # 2500
+
+    for i in range(1,8):
+        file_path=rf'C:\Users\onlin\Downloads\YT_fights\fight{i}.webm'
+        detect_fights(video_path=file_path,
+                      # model_name='../fight_det_model.pt',
+                      model_name=f'../{models[0]}',
+                      start_frame=0)

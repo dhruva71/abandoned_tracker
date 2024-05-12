@@ -44,7 +44,8 @@ def intersects(bbox1, bbox2) -> bool:
     return intersection
 
 
-def detect_fall_on_escaltor(video_path, model_name='../fight_det_model.pt', start_frame: int = 0) -> list:
+def detect_fall_on_escaltor(video_path, model_name='../fight_det_model.pt', start_frame: int = 0, conf=0.3,
+                            iou=0.7) -> list:
     global FRAME_COUNT
     global FRAMES_TO_PROCESS
     global ABORT_FLAG
@@ -141,8 +142,8 @@ def detect_fall_on_escaltor(video_path, model_name='../fight_det_model.pt', star
                                     visualize=False,
                                     line_width=1,
                                     show_labels=False,
-                                    iou=0.7,
-                                    conf=0.1,
+                                    iou=iou,
+                                    conf=conf,
                                     imgsz=IMAGE_SIZE,
                                     )
 
@@ -232,8 +233,10 @@ def create_xyxy_from_xywh(x, y, w, h):
 
 if __name__ == '__main__':
     models = ['fall_on_escalator_v2_dhruva_yolov8x.pt', 'fall_on_escalator_v1_dhruva_yolov8x.pt']
-    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Passenger_Fall_Escalator\Fall_Escalator_1_Cam1_1.avi'  # 2500
+    video_path = r'C:\Users\onlin\Downloads\TNex\new_dataset\Passenger_Fall_Escalator\Fall_Escalator_4_Cam2_0&1.avi'  # 2500
     detect_fall_on_escaltor(video_path=video_path,
                             # model_name='../fight_det_model.pt',
                             model_name=f'../{models[0]}',
-                            start_frame=100)
+                            start_frame=100,
+                            conf=0.5,
+                            iou=0.7)
